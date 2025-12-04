@@ -1,91 +1,64 @@
 {
-    "version": 1,
-      "courses": [
+  "version": 1,
+  "courses": [
+    {
+      "id": "course_micrograd",
+      "title": "Micrograd: Backprop from Scratch",
+      "thumbnail": "assets/micrograd-thumbnail.jpg",
+      "sequence_order": 1,
+      "chapters": [
         {
-          "id": "course_micrograd",
-          "title": "Micrograd: Backprop from Scratch",
-          "thumbnail": "assets/micrograd-thumbnail.jpg",
-          "sequence_order": 1,
-          "chapters": [
-            {
-              "id": "micrograd_ch1",
-              "title": "The Value Object",
-              "video_id": "VMj-3S1tku0",
-              "start": 0,
-              "end": 480,
-              "xp_reward": 50,
-              "task": {
-                "type": "gap_fill",
-                "instruction": "Complete the Value class constructor. The Value object wraps a scalar and tracks gradients.",
-                "template": `class Value:
-    def __init__(self, data, _children=(), _op=''):
-        self.data = ___
-        self.grad = 0
-        self._backward = lambda: None
-        self._prev = set(_children)
-        self._op = _op`,
-                "solution": "data",
-                "hints": ["The data parameter should be stored in the data attribute"]
-              }
-            },
-            {
-              "id": "micrograd_ch2", 
-              "title": "Addition Operation",
-              "video_id": "VMj-3S1tku0",
-              "start": 480,
-              "end": 960,
-              "xp_reward": 75,
-              "task": {
-                "type": "gap_fill",
-                "instruction": "Implement the __add__ method for the Value class.",
-                "template": `def __add__(self, other):
-    other = other if isinstance(other, Value) else Value(other)
-    out = Value(self.data + other.data, (self, other), '+')
-    
-    def _backward():
-        self.grad += ___
-        other.grad += ___
-    out._backward = _backward
-    
-    return out`,
-                "solution": "out.grad\nout.grad",
-                "hints": ["The gradient of addition distributes equally to both operands"]
-              }
-            },
-            {
-              "id": "micrograd_ch3",
-              "title": "Multiplication & Chain Rule", 
-              "video_id": "VMj-3S1tku0",
-              "start": 960,
-              "end": 1440,
-              "xp_reward": 100,
-              "task": {
-                "type": "code",
-                "instruction": "Implement the backward pass for multiplication using the chain rule.",
-                "template": `def __mul__(self, other):
-    other = other if isinstance(other, Value) else Value(other)
-    out = Value(self.data * other.data, (self, other), '*')
-    
-    def _backward():
-        # TODO: Implement backward pass
-        pass
-    out._backward = _backward
-    
-    return out`,
-                "solution": `def __mul__(self, other):
-    other = other if isinstance(other, Value) else Value(other)
-    out = Value(self.data * other.data, (self, other), '*')
-    
-    def _backward():
-        self.grad += other.data * out.grad
-        other.grad += self.data * out.grad
-    out._backward = _backward
-    
-    return out`,
-                "hints": ["Use the product rule: d/dx(uv) = u'v + uv'"]
-              }
-            }
-          ]
+          "id": "micrograd_ch1",
+          "title": "The Value Object",
+          "video_id": "VMj-3S1tku0",
+          "start": 0,
+          "end": 480,
+          "xp_reward": 50,
+          "task": {
+            "type": "gap_fill",
+            "instruction": "Complete the Value class constructor. The Value object wraps a scalar and tracks gradients.",
+            "template": "class Value:\n    def __init__(self, data, _children=(), _op=''):\n        self.data = ___\n        self.grad = 0\n        self._backward = lambda: None\n        self._prev = set(_children)\n        self._op = _op",
+            "solution": "data",
+            "hints": [
+              "The data parameter should be stored in the data attribute"
+            ]
+          }
+        },
+        {
+          "id": "micrograd_ch2",
+          "title": "Addition Operation",
+          "video_id": "VMj-3S1tku0",
+          "start": 480,
+          "end": 960,
+          "xp_reward": 75,
+          "task": {
+            "type": "gap_fill",
+            "instruction": "Implement the __add__ method for the Value class.",
+            "template": "def __add__(self, other):\n    other = other if isinstance(other, Value) else Value(other)\n    out = Value(self.data + other.data, (self, other), '+')\n    \n    def _backward():\n        self.grad += ___\n        other.grad += ___\n    out._backward = _backward\n    \n    return out",
+            "solution": "out.grad\nout.grad",
+            "hints": [
+              "The gradient of addition distributes equally to both operands"
+            ]
+          }
+        },
+        {
+          "id": "micrograd_ch3",
+          "title": "Multiplication & Chain Rule",
+          "video_id": "VMj-3S1tku0",
+          "start": 960,
+          "end": 1440,
+          "xp_reward": 100,
+          "task": {
+            "type": "code",
+            "instruction": "Implement the backward pass for multiplication using the chain rule.",
+            "template": "def __mul__(self, other):\n    other = other if isinstance(other, Value) else Value(other)\n    out = Value(self.data * other.data, (self, other), '*')\n    \n    def _backward():\n        # TODO: Implement backward pass\n        pass\n    out._backward = _backward\n    \n    return out",
+            "solution": "def __mul__(self, other):\n    other = other if isinstance(other, Value) else Value(other)\n    out = Value(self.data * other.data, (self, other), '*')\n    \n    def _backward():\n        self.grad += other.data * out.grad\n        other.grad += self.data * out.grad\n    out._backward = _backward\n    \n    return out",
+            "hints": [
+              "Use the product rule: d/dx(uv) = u'v + uv'"
+            ]
+          }
         }
       ]
-  }
+    }
+  ]
+}
