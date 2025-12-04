@@ -64,10 +64,10 @@
       "id": "course_micrograd_2",
       "title": "Micrograd: Backprop from Scratch Part 2",
       "thumbnail": "assets/tensor-core-icon.png",
-      "sequence_order": 1,
+      "sequence_order": 2,
       "chapters": [
         {
-          "id": "micrograd_ch1",
+          "id": "micrograd_ch1_2",
           "title": "The Value Object",
           "video_id": "VMj-3S1tku0",
           "start": 0,
@@ -84,7 +84,7 @@
           }
         },
         {
-          "id": "micrograd_ch2",
+          "id": "micrograd_ch2_2",
           "title": "Addition Operation",
           "video_id": "VMj-3S1tku0",
           "start": 480,
@@ -101,7 +101,7 @@
           }
         },
         {
-          "id": "micrograd_ch3",
+          "id": "micrograd_ch3_2",
           "title": "Multiplication & Chain Rule",
           "video_id": "VMj-3S1tku0",
           "start": 960,
