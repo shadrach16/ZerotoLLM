@@ -14,7 +14,7 @@
           "start": 0,
           "end": 80,
           "xp_reward": 50,
-          "task": {
+          "task": [{
             "type": "gap_fill",
             "instruction": "Complete the Value class constructor. The Value object wraps a scalar and tracks gradients.",
             "template": "class Value:\n    def __init__(self, data, _children=(), _op=''):\n        self.data = ___\n        self.grad = 0\n        self._backward = lambda: None\n        self._prev = set(_children)\n        self._op = _op",
@@ -22,7 +22,7 @@
             "hints": [
               "The data parameter should be stored in the data attribute"
             ]
-          }
+          }]
         },
         {
           "id": "micrograd_ch2",
@@ -31,7 +31,7 @@
           "start": 480,
           "end": 960,
           "xp_reward": 75,
-          "task": {
+          "task": [{
             "type": "gap_fill",
             "instruction": "Implement the __add__ method for the Value class.",
             "template": "def __add__(self, other):\n    other = other if isinstance(other, Value) else Value(other)\n    out = Value(self.data + other.data, (self, other), '+')\n    \n    def _backward():\n        self.grad += out.grad\n        other.grad += ___\n    out._backward = _backward\n    \n    return out",
@@ -39,7 +39,7 @@
             "hints": [
               "The gradient of addition distributes equally to both operands"
             ]
-          }
+          }]
         },
         {
           "id": "micrograd_ch3",
@@ -48,15 +48,20 @@
           "start": 960,
           "end": 1440,
           "xp_reward": 100,
-          "task": {
-            "type": "code",
-            "instruction": "Implement the backward pass for multiplication using the chain rule.",
-            "template": "def __mul__(self, other):\n    other = other if isinstance(other, Value) else Value(other)\n    out = Value(self.data * other.data, (self, other), '*')\n    \n    def _backward():\n        # TODO: Implement backward pass\n        pass\n    out._backward = _backward\n    \n    return out",
-            "solution": "def __mul__(self, other):\n    other = other if isinstance(other, Value) else Value(other)\n    out = Value(self.data * other.data, (self, other), '*')\n    \n    def _backward():\n        self.grad += other.data * out.grad\n        other.grad += self.data * out.grad\n    out._backward = _backward\n    \n    return out",
-            "hints": [
-              "Use the product rule: d/dx(uv) = u'v + uv'"
-            ]
-          }
+          "task": [
+            {
+              "type": "quiz",
+              "instruction": "What is the primary purpose of the Value object?",
+              "solution": "To store data and gradients",
+              "options": ["To store data and gradients", "To plot graphs", "To fetch data from internet"]
+            },
+            {
+              "type": "gap_fill",
+              "instruction": "Complete the constructor.",
+              "template": "class Value:\n    def __init__(self, data):\n        self.data = ___\n        self.grad = 0",
+              "solution": "data"
+            }
+          ]
         }
       ]
     },
@@ -73,7 +78,7 @@
           "start": 0,
           "end": 480,
           "xp_reward": 50,
-          "task": {
+          "task": [{
             "type": "gap_fill",
             "instruction": "Complete the Value class constructor. The Value object wraps a scalar and tracks gradients.",
             "template": "class Value:\n    def __init__(self, data, _children=(), _op=''):\n        self.data = ___\n        self.grad = 0\n        self._backward = lambda: None\n        self._prev = set(_children)\n        self._op = _op",
@@ -81,7 +86,7 @@
             "hints": [
               "The data parameter should be stored in the data attribute"
             ]
-          }
+          }]
         },
         {
           "id": "micrograd_ch2_2",
@@ -90,7 +95,7 @@
           "start": 480,
           "end": 960,
           "xp_reward": 75,
-          "task": {
+          "task": [{
             "type": "gap_fill",
             "instruction": "Implement the __add__ method for the Value class.",
             "template": "def __add__(self, other):\n    other = other if isinstance(other, Value) else Value(other)\n    out = Value(self.data + other.data, (self, other), '+')\n    \n    def _backward():\n        self.grad += ___\n        other.grad += ___\n    out._backward = _backward\n    \n    return out",
@@ -98,7 +103,7 @@
             "hints": [
               "The gradient of addition distributes equally to both operands"
             ]
-          }
+          }]
         },
         {
           "id": "micrograd_ch3_2",
@@ -107,7 +112,7 @@
           "start": 960,
           "end": 1440,
           "xp_reward": 100,
-          "task": {
+          "task": [{
             "type": "code",
             "instruction": "Implement the backward pass for multiplication using the chain rule.",
             "template": "def __mul__(self, other):\n    other = other if isinstance(other, Value) else Value(other)\n    out = Value(self.data * other.data, (self, other), '*')\n    \n    def _backward():\n        # TODO: Implement backward pass\n        pass\n    out._backward = _backward\n    \n    return out",
@@ -115,7 +120,7 @@
             "hints": [
               "Use the product rule: d/dx(uv) = u'v + uv'"
             ]
-          }
+          }]
         }
       ]
     }
