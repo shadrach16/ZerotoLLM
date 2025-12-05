@@ -14,7 +14,7 @@
           "start": 0,
           "end": 80,
           "xp_reward": 50,
-          "task": [{
+          "tasks": [{
             "type": "gap_fill",
             "instruction": "Complete the Value class constructor. The Value object wraps a scalar and tracks gradients.",
             "template": "class Value:\n    def __init__(self, data, _children=(), _op=''):\n        self.data = ___\n        self.grad = 0\n        self._backward = lambda: None\n        self._prev = set(_children)\n        self._op = _op",
@@ -31,7 +31,7 @@
           "start": 480,
           "end": 960,
           "xp_reward": 75,
-          "task": [{
+          "tasks": [{
             "type": "gap_fill",
             "instruction": "Implement the __add__ method for the Value class.",
             "template": "def __add__(self, other):\n    other = other if isinstance(other, Value) else Value(other)\n    out = Value(self.data + other.data, (self, other), '+')\n    \n    def _backward():\n        self.grad += out.grad\n        other.grad += ___\n    out._backward = _backward\n    \n    return out",
@@ -48,7 +48,7 @@
           "start": 960,
           "end": 1440,
           "xp_reward": 100,
-          "task": [
+          "tasks": [
             {
               "type": "quiz",
               "instruction": "What is the primary purpose of the Value object?",
@@ -78,7 +78,7 @@
           "start": 0,
           "end": 480,
           "xp_reward": 50,
-          "task": [{
+          "tasks": [{
             "type": "gap_fill",
             "instruction": "Complete the Value class constructor. The Value object wraps a scalar and tracks gradients.",
             "template": "class Value:\n    def __init__(self, data, _children=(), _op=''):\n        self.data = ___\n        self.grad = 0\n        self._backward = lambda: None\n        self._prev = set(_children)\n        self._op = _op",
@@ -95,7 +95,7 @@
           "start": 480,
           "end": 960,
           "xp_reward": 75,
-          "task": [{
+          "tasks": [{
             "type": "gap_fill",
             "instruction": "Implement the __add__ method for the Value class.",
             "template": "def __add__(self, other):\n    other = other if isinstance(other, Value) else Value(other)\n    out = Value(self.data + other.data, (self, other), '+')\n    \n    def _backward():\n        self.grad += ___\n        other.grad += ___\n    out._backward = _backward\n    \n    return out",
@@ -112,7 +112,7 @@
           "start": 960,
           "end": 1440,
           "xp_reward": 100,
-          "task": [{
+          "tasks": [{
             "type": "code",
             "instruction": "Implement the backward pass for multiplication using the chain rule.",
             "template": "def __mul__(self, other):\n    other = other if isinstance(other, Value) else Value(other)\n    out = Value(self.data * other.data, (self, other), '*')\n    \n    def _backward():\n        # TODO: Implement backward pass\n        pass\n    out._backward = _backward\n    \n    return out",
