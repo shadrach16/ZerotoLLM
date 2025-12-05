@@ -60,7 +60,14 @@
               "instruction": "Complete the constructor.",
               "template": "class Value:\n    def __init__(self, data):\n        self.data = ___\n        self.grad = 0",
               "solution": "data"
-            }
+            },
+            {
+  "type": "parsons",
+  "instruction": "Arrange the lines to calculate the gradient.",
+  "solution": "x.grad += 1.0\nx._backward()",
+  "lines": ["x._backward()", "x.grad += 1.0", "x.data += 1.0", "return x"],
+  "hints": ["You must set the seed gradient before backpropagating."]
+}
           ]
         }
       ]
