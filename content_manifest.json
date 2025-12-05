@@ -34,8 +34,8 @@
           "task": {
             "type": "gap_fill",
             "instruction": "Implement the __add__ method for the Value class.",
-            "template": "def __add__(self, other):\n    other = other if isinstance(other, Value) else Value(other)\n    out = Value(self.data + other.data, (self, other), '+')\n    \n    def _backward():\n        self.grad += ___\n        other.grad += ___\n    out._backward = _backward\n    \n    return out",
-            "solution": "out.grad\nout.grad",
+            "template": "def __add__(self, other):\n    other = other if isinstance(other, Value) else Value(other)\n    out = Value(self.data + other.data, (self, other), '+')\n    \n    def _backward():\n        self.grad += out.grad\n        other.grad += ___\n    out._backward = _backward\n    \n    return out",
+            "solution": "out",
             "hints": [
               "The gradient of addition distributes equally to both operands"
             ]
