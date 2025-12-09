@@ -2185,7 +2185,249 @@
           ]
         }
       ]
+    },
+     {
+      "id": "course_build_gpt_scratch",
+      "title": "Build GPT From Scratch with PyTorch",
+      "thumbnail": "assets/build-gpt-thumbnail.jpg",
+      "description": "A comprehensive code-along course building a Generative Pre-trained Transformer (GPT) from the ground up, following the 'Attention Is All You Need' architecture.",
+      "sequence_order": 10,
+      "chapters": [
+        {
+          "id": "gpt_ch1_data",
+          "title": "Data Prep & Tokenization",
+          "video_id": "kCc8FmEb1nY",
+          "description": "We start by analyzing the Tiny Shakespeare dataset, building a character-level tokenizer, and encoding our text into integers for the model.",
+          "start": 0,
+          "end": 867,
+          "xp_reward": 50,
+          "tasks": [
+            {
+              "type": "code",
+              "instruction": "Create the mapping dictionaries to convert characters to integers (stoi) and integers to characters (itos).",
+              "template": "chars = sorted(list(set(text)))\n# Create mapping from character to integer\nstoi = { ch:i for i,ch in enumerate(chars) }\n# Create mapping from integer to character\nitos = { ___ }",
+              "solution": "i:ch for i,ch in enumerate(chars)",
+              "hints": [
+                "Use a dictionary comprehension similar to stoi, but swap keys and values."
+              ]
+            },
+            {
+              "type": "gap_fill",
+              "instruction": "Tokenization is the process of translating a string of text into a sequence of ___.",
+              "template": "encoder = lambda s: [stoi[c] for c in s]\n# Output is a list of ___",
+              "solution": "integers",
+              "hints": [
+                "The model cannot read raw text; it needs numbers."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gpt_ch2_bigram",
+          "title": "Bigram Baseline & Training Loop",
+          "video_id": "kCc8FmEb1nY",
+          "description": "We implement a data loader to generate batches of input/target chunks and build a simple Bigram Language Model to establish a baseline performance. ",
+          "start": 867,
+          "end": 2280,
+          "xp_reward": 100,
+          "tasks": [
+            {
+              "type": "code",
+              "instruction": "Implement the `get_batch` function to fetch random chunks of data.",
+              "template": "def get_batch(split):\n    data = train_data if split == 'train' else val_data\n    # Generate random starting indices for the batch\n    ix = torch.randint(len(data) - block_size, (batch_size,))\n    x = torch.stack([data[i:i+block_size] for i in ix])\n    # y is the targets, shifted by 1\n    y = torch.stack([data[___] for i in ix])\n    return x, y",
+              "solution": "i+1:i+block_size+1",
+              "hints": [
+                "The targets 'y' should be the next character for every character in 'x'."
+              ]
+            },
+            {
+              "type": "parsons",
+              "instruction": "Arrange the standard PyTorch training loop steps.",
+              "solution": "logits, loss = model(xb, yb)\noptimizer.zero_grad(set_to_none=True)\nloss.backward()\noptimizer.step()",
+              "lines": [
+                "loss.backward()",
+                "optimizer.step()",
+                "logits, loss = model(xb, yb)",
+                "optimizer.zero_grad(set_to_none=True)"
+              ],
+              "hints": [
+                "First compute the loss (forward pass), then clear gradients, then calculate gradients (backward), then update weights."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gpt_ch3_math_attention",
+          "title": "The Math of Self-Attention",
+          "video_id": "kCc8FmEb1nY",
+          "description": "We derive the mathematical foundation of attention by exploring how to efficiently aggregate information from past tokens using matrix multiplication and masking.",
+          "start": 2280,
+          "end": 3720,
+          "xp_reward": 100,
+          "tasks": [
+            {
+              "type": "quiz",
+              "instruction": "Why do we use a lower triangular matrix (tril) for masking in the attention mechanism?",
+              "questions": [
+                {
+                  "question": "Why do we use a lower triangular matrix (tril) for masking in the attention mechanism?",
+                  "options": [
+                    "To prevent the model from seeing future tokens (cheating).",
+                    "To save memory during training.",
+                    "To ensure the matrix is invertible."
+                  ],
+                  "answer": "To prevent the model from seeing future tokens (cheating)."
+                }
+              ]
+            },
+            {
+              "type": "code",
+              "instruction": "Implement the weighted aggregation using matrix multiplication. `wei` is the weight matrix (affinities).",
+              "template": "# x is (B, T, C), wei is (T, T)\n# We want to perform a weighted sum of past vectors\n# Result shape should be (B, T, C)\nxbow = wei @ ___",
+              "solution": "x",
+              "hints": [
+                "We multiply the weights by the values (x)."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gpt_ch4_self_attention",
+          "title": "Implementing Self-Attention",
+          "video_id": "kCc8FmEb1nY",
+          "description": "We implement the core 'Head' of self-attention using Keys, Queries, and Values, allowing tokens to effectively 'search' for relevant information from the past. ",
+          "start": 3720,
+          "end": 4751,
+          "xp_reward": 100,
+          "tasks": [
+            {
+              "type": "gap_fill",
+              "instruction": "In self-attention: \n- What I am looking for: ___\n- What I contain: Key\n- What I communicate: Value",
+              "template": "query = self.query(x)\nkey = self.key(x)\nvalue = self.value(x)",
+              "solution": "query",
+              "hints": [
+                "It starts with Q."
+              ]
+            },
+            {
+              "type": "code",
+              "instruction": "Calculate the attention scores (affinities) between Queries and Keys.",
+              "template": "# q is (B, T, head_size), k is (B, T, head_size)\n# We need to transpose k to match dimensions: (B, T, C) @ (B, C, T) -> (B, T, T)\nwei = q @ k.transpose(___, ___)",
+              "solution": "-2, -1",
+              "hints": [
+                "Transpose the last two dimensions."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gpt_ch5_multi_head",
+          "title": "Multi-Head Attention & FeedForward",
+          "video_id": "kCc8FmEb1nY",
+          "description": "We upgrade the single head to Multi-Head Attention to capture different types of relationships and add a FeedForward network for computation per token.",
+          "start": 4751,
+          "end": 5208,
+          "xp_reward": 100,
+          "tasks": [
+            {
+              "type": "gap_fill",
+              "instruction": "To stabilize gradients, we scale the attention scores by dividing by the square root of the ___ dimension.",
+              "template": "wei = wei * start_factor\n# This is k.shape[-1]\nscale_factor = head_size**-0.5",
+              "solution": "head",
+              "hints": [
+                "It's the size of the key/query vectors."
+              ]
+            },
+            {
+              "type": "parsons",
+              "instruction": "Construct the FeedForward module structure.",
+              "solution": "self.net = nn.Sequential(\n    nn.Linear(n_embd, 4 * n_embd),\n    nn.ReLU(),\n    nn.Linear(4 * n_embd, n_embd),\n)",
+              "lines": [
+                "self.net = nn.Sequential(",
+                "    nn.Linear(n_embd, 4 * n_embd),",
+                "    nn.ReLU(),",
+                "    nn.Linear(4 * n_embd, n_embd),",
+                ")"
+              ],
+              "hints": [
+                "It projects up by 4x, applies non-linearity, then projects back down."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gpt_ch6_transformer_block",
+          "title": "Residuals & LayerNorm",
+          "video_id": "kCc8FmEb1nY",
+          "description": "We assemble the full Transformer Block by adding Residual Connections (Skip Connections) and Layer Normalization to enable deep network training. ",
+          "start": 5208,
+          "end": 5869,
+          "xp_reward": 100,
+          "tasks": [
+            {
+              "type": "quiz",
+              "instruction": "What is the primary purpose of Residual (Skip) Connections?",
+              "questions": [
+                {
+                  "question": "What is the primary purpose of Residual (Skip) Connections?",
+                  "options": [
+                    "To allow gradients to flow directly through the network during backpropagation, helping with optimization depth.",
+                    "To skip the computation of expensive layers.",
+                    "To increase the number of parameters."
+                  ],
+                  "answer": "To allow gradients to flow directly through the network during backpropagation, helping with optimization depth."
+                }
+              ]
+            },
+            {
+              "type": "code",
+              "instruction": "Implement the Forward pass of a Block with Residual connections.",
+              "template": "# x is input\n# self.sa is Self-Attention, self.ffwd is FeedForward\n# self.ln1, self.ln2 are LayerNorms\nx = x + self.sa(self.ln1(x))\nx = x + ___",
+              "solution": "self.ffwd(self.ln2(x))",
+              "hints": [
+                "Apply LayerNorm 2, then FeedForward, then add to the residual stream."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gpt_ch7_scaling",
+          "title": "Scaling & Conclusion",
+          "video_id": "kCc8FmEb1nY",
+          "description": "We finalize the model with Dropout for regularization, scale up the parameters to create a larger GPT, and discuss the training process. ",
+          "start": 5869,
+          "end": 6979,
+          "xp_reward": 50,
+          "tasks": [
+            {
+              "type": "gap_fill",
+              "instruction": "___ is a regularization technique that randomly zeros out some elements during training to prevent overfitting.",
+              "template": "self.dropout = nn.___(dropout_prob)",
+              "solution": "Dropout",
+              "hints": [
+                "It 'drops' neurons out."
+              ]
+            },
+            {
+              "type": "quiz",
+              "instruction": "What is the difference between Pre-training (what we did) and Fine-tuning (like ChatGPT)?",
+              "questions": [
+                {
+                  "question": "What is the difference between Pre-training (what we did) and Fine-tuning (like ChatGPT)?",
+                  "options": [
+                    "Pre-training teaches the model to predict the next token on massive data; Fine-tuning aligns it to be a helpful assistant.",
+                    "Pre-training is for images; Fine-tuning is for text.",
+                    "They are the same thing."
+                  ],
+                  "answer": "Pre-training teaches the model to predict the next token on massive data; Fine-tuning aligns it to be a helpful assistant."
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
+ 
 
 
  
