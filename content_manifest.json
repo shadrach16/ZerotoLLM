@@ -1515,7 +1515,301 @@
           ]
         }
       ]
+    }, 
+    {
+      "id": "course_makemore_backprop",
+      "title": "Makemore: Becoming a Backprop Ninja",
+      "thumbnail": "assets/makemore-backprop-thumbnail.jpg",
+      "description": "De-mystify deep learning by manually implementing backpropagation from scratch. Move beyond 'loss.backward()' to understand tensor-level gradients, matrix calculus, and analytical simplifications for Cross Entropy and Batch Normalization.",
+      "sequence_order": 7,
+      "chapters": [
+        {
+          "id": "makemore_bp_ch1",
+          "title": "The Leaky Abstraction of Backprop",
+          "video_id": "q8SA3rM6ckI",
+          "description": "We establish why manual backpropagation is a crucial skill for debugging neural networks. We set up the Multi-Layer Perceptron (MLP) architecture with Batch Normalization that we will be dissecting.",
+          "start": 0,
+          "end": 781,
+          "xp_reward": 30,
+          "key_learning_outcomes": [
+            "Historical context of manual backprop (pre-Autograd)",
+            "The concept of 'Leaky Abstractions' in deep learning",
+            "Setting up the MLP forward pass for manual differentiation"
+          ],
+          "tasks": [
+            {
+              "type": "quiz",
+              "instruction": "Why does the instructor consider Backpropagation a 'Leaky Abstraction'?",
+              "options": [
+                "Because you can easily shoot yourself in the foot (e.g., vanishing gradients, dead neurons) if you don't understand the internals.",
+                "Because it leaks memory if not handled correctly in C++.",
+                "Because it reveals the private data of the training set."
+              ],
+              "solution": "Because you can easily shoot yourself in the foot (e.g., vanishing gradients, dead neurons) if you don't understand the internals.",
+              "hints": [
+                "Think about debugging issues like saturated tanh or exploding gradients."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "makemore_bp_ch2",
+          "title": "Backprop: Loss to Probabilities",
+          "video_id": "q8SA3rM6ckI",
+          "description": "We begin the manual backward pass at the very end of the graph. We derive gradients for the Negative Log Likelihood loss, log probabilities, and handling shapes/broadcasting during the backward pass.",
+          "start": 781,
+          "end": 2011,
+          "xp_reward": 100,
+          "key_learning_outcomes": [
+            "Gradient of Mean Loss (-1/N)",
+            "Backpropagating through `log(x)` (1/x)",
+            "Handling tensor shapes during gradient assignment"
+          ],
+          "tasks": [
+            {
+              "type": "gap_fill",
+              "instruction": "Calculate the gradient of the loss with respect to log-probabilities `dlogprobs` for the correct indices.",
+              "template": "# n is batch size\n# We only care about the indices specified by target 'Yb'\ndlogprobs[range(n), Yb] = ___ * (1.0/n)",
+              "solution": "-1",
+              "hints": [
+                "The loss is the NEGATIVE log likelihood."
+              ]
+            },
+            {
+              "type": "code",
+              "instruction": "Implement the backward pass for the log operation `logprobs = probs.log()`.",
+              "template": "# dlogprobs is the gradient flowing in\n# d/dx log(x) = 1/x\ndprobs = (1.0 / ___) * dlogprobs",
+              "solution": "probs",
+              "hints": [
+                "Multiply the local derivative (1/input) by the global gradient."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "makemore_bp_ch3",
+          "title": "Backprop: Broadcasting & Linear Layers",
+          "video_id": "q8SA3rM6ckI",
+          "description": "We tackle the complexity of broadcasting in reverse. If a dimension is replicated (broadcasted) in the forward pass, it must be summed in the backward pass. We also derive the gradients for Matrix Multiplication.",
+          "start": 2011,
+          "end": 3223,
+          "xp_reward": 100,
+          "key_learning_outcomes": [
+            "Broadcasting rule: Forward Copy -> Backward Sum",
+            "Backpropagating through Matrix Multiplication",
+            "Matching shapes to determine transpositions"
+          ],
+          "tasks": [
+            {
+              "type": "quiz",
+              "instruction": "If `counts_sum` (shape 32x1) was broadcasted to shape (32x27) during division in the forward pass, how do we calculate its gradient `dcounts_sum`?",
+              "options": [
+                "Sum the incoming gradient `dcounts` across the broadcasted dimension (dim 1).",
+                "Replicate the incoming gradient.",
+                "Take the mean of the incoming gradient."
+              ],
+              "solution": "Sum the incoming gradient `dcounts` across the broadcasted dimension (dim 1).",
+              "hints": [
+                "The variable was used multiple times (once for each column), so we accumulate the gradients."
+              ]
+            },
+            {
+              "type": "parsons",
+              "instruction": "Determine the gradient `dh` for the expression `logits = h @ W2 + b2`. `dlogits` is (32, 27), `W2` is (64, 27). `dh` must be (32, 64).",
+              "solution": "dh = dlogits @ W2.T",
+              "lines": [
+                "dh = dlogits @ W2.T",
+                "dh = dlogits.T @ W2",
+                "dh = W2 @ dlogits"
+              ],
+              "hints": [
+                "Align the inner dimensions: (32, 27) @ (27, 64) results in (32, 64)."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "makemore_bp_ch4",
+          "title": "Backprop: Tanh & BatchNorm Decomposition",
+          "video_id": "q8SA3rM6ckI",
+          "description": "We backpropagate through the Tanh activation function and begin dissecting the Batch Normalization layer into its atomic operations (mean, variance, standardization) to calculate gradients step-by-step.",
+          "start": 3223,
+          "end": 3912,
+          "xp_reward": 100,
+          "key_learning_outcomes": [
+            "Gradient of Tanh: `1 - t**2`",
+            "Backpropagating through `max()` and `indices`",
+            "Decomposing Batch Norm into differentiable steps"
+          ],
+          "tasks": [
+            {
+              "type": "code",
+              "instruction": "Calculate the gradient for the Tanh activation `h = h_preact.tanh()`.",
+              "template": "# h is the output of the tanh function\n# d/dx tanh(x) = 1 - tanh(x)^2\ndh_preact = (1.0 - ___**2) * dh",
+              "solution": "h",
+              "hints": [
+                "The derivative can be expressed in terms of the output `h`."
+              ]
+            },
+            {
+              "type": "gap_fill",
+              "instruction": "When backpropagating through `max()`, the gradient is routed ONLY to the indices that achieved the max value. We use `one_hot` to create a mask.",
+              "template": "# dlogit_maxes flows only to the max indices\ndlogits += F.one_hot(indices, num_classes=27) * ___",
+              "solution": "dlogit_maxes",
+              "hints": [
+                "Multiply the mask by the incoming gradient."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "makemore_bp_ch5",
+          "title": "Bessel's Correction & Variance",
+          "video_id": "q8SA3rM6ckI",
+          "description": "We dive into the subtle details of variance calculation, specifically Bessel's Correction (dividing by N-1 vs N), and finish backpropagating through the complex chain of Batch Norm operations.",
+          "start": 3912,
+          "end": 5191,
+          "xp_reward": 100,
+          "key_learning_outcomes": [
+            "Bessel's Correction (Unbiased estimator)",
+            "Backpropagating through variance calculation",
+            "Handling branching paths in computation graphs"
+          ],
+          "tasks": [
+            {
+              "type": "quiz",
+              "instruction": "Why does the instructor use `1/(n-1)` instead of `1/n` for variance calculation?",
+              "options": [
+                "It is the unbiased estimator for population variance (Bessel's correction).",
+                "It prevents division by zero.",
+                "It makes the tensor shapes align better."
+              ],
+              "solution": "It is the unbiased estimator for population variance (Bessel's correction).",
+              "hints": [
+                "This correction matters when sample sizes are small."
+              ]
+            },
+            {
+              "type": "code",
+              "instruction": "Backpropagate through the centering operation `diff = x - mean`.",
+              "template": "# d_diff flows back to x and mean\ndx = d_diff\n# Because mean is broadcasted (replicated) across the batch, we sum\ndmean = -d_diff.sum(___, keepdim=True)",
+              "solution": "0",
+              "hints": [
+                "Sum across the batch dimension (0)."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "makemore_bp_ch6",
+          "title": "Analytical Gradients: Cross Entropy",
+          "video_id": "q8SA3rM6ckI",
+          "description": "We realize that backpropagating through atomic loss operations is inefficient. We derive the analytical gradient for the Softmax + Cross Entropy combined layer, resulting in a significantly simpler and faster formula.",
+          "start": 5191,
+          "end": 5797,
+          "xp_reward": 100,
+          "key_learning_outcomes": [
+            "Analytical simplification of Softmax gradient",
+            "The `softmax(logits) - target` formula",
+            "Intuition of 'Push and Pull' forces in gradients"
+          ],
+          "tasks": [
+            {
+              "type": "parsons",
+              "instruction": "Implement the efficient analytical gradient for Cross Entropy Loss.",
+              "solution": "dlogits = F.softmax(logits, 1)\ndlogits[range(n), Yb] -= 1\ndlogits /= n",
+              "lines": [
+                "dlogits /= n",
+                "dlogits[range(n), Yb] -= 1",
+                "dlogits = F.softmax(logits, 1)"
+              ],
+              "hints": [
+                "Calculate softmax probabilities first.",
+                "Subtract 1 from the correct label indices.",
+                "Normalize by batch size."
+              ]
+            },
+            {
+              "type": "quiz",
+              "instruction": "What is the sum of the gradients in `dlogits` for any single example?",
+              "options": [
+                "Zero",
+                "One",
+                "It depends on the loss."
+              ],
+              "solution": "Zero",
+              "hints": [
+                "The forces of pushing down incorrect classes and pulling up the correct class equalize."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "makemore_bp_ch7",
+          "title": "Analytical Gradients: Batch Norm",
+          "video_id": "q8SA3rM6ckI",
+          "description": "Similar to Cross Entropy, we replace the messy atomic backprop of Batch Norm with a mathematically derived, streamlined equation. ",
+          "start": 5797,
+          "end": 6602,
+          "xp_reward": 100,
+          "key_learning_outcomes": [
+            "Analytical derivative of Batch Normalization",
+            "Computational efficiency of fused kernels",
+            "Verifying manual gradients against PyTorch"
+          ],
+          "tasks": [
+            {
+              "type": "gap_fill",
+              "instruction": "The analytical gradient for Batch Norm involves creating a simplified expression for `dh_preact`. This avoids creating intermediate buffers for mean and variance during the ___ pass.",
+              "solution": "backward",
+              "hints": [
+                "We are optimizing the gradient calculation step."
+              ]
+            },
+            {
+              "type": "code",
+              "instruction": "Call the custom comparison function to verify your manual gradients.",
+              "template": "# cmp(manual_name, manual_tensor, pytorch_tensor)\ncmp('h_preact', dh_preact, ___)",
+              "solution": "h_preact.grad",
+              "hints": [
+                "You compare against the `.grad` attribute populated by PyTorch's autograd."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "makemore_bp_ch8",
+          "title": "The Grand Loop: Putting It All Together",
+          "video_id": "q8SA3rM6ckI",
+          "description": "We assemble the complete training loop, replacing `loss.backward()` entirely with our manual implementations. We verify that the network trains just as well as before.",
+          "start": 6602,
+          "end": 6923,
+          "xp_reward": 50,
+          "key_learning_outcomes": [
+            "Replacing Autograd with manual backprop",
+            "Structure of a rigorous training loop",
+            "Verification of correctness"
+          ],
+          "tasks": [
+            {
+              "type": "parsons",
+              "instruction": "Order the steps of the manual training loop.",
+              "solution": "forward_pass()\n# Manual Backprop\nbackprop_cross_entropy()\nbackprop_layers()\noptimizer_step()",
+              "lines": [
+                "optimizer_step()",
+                "forward_pass()",
+                "backprop_cross_entropy()",
+                "backprop_layers()"
+              ],
+              "hints": [
+                "You must compute the loss (forward) before you can derive gradients (backward)."
+              ]
+            }
+          ]
+        }
+      ]
     }
+ 
  
 
   ]
