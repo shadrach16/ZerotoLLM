@@ -1808,7 +1808,142 @@
           ]
         }
       ]
+    },
+      {
+      "id": "course_makemore_wavenet",
+      "title": "Building Makemore: WaveNet",
+      "thumbnail": "assets/makemore-wavenet-thumbnail.jpg",
+      "description": "Scale up your character-level language model by implementing a WaveNet-like hierarchical architecture. Learn to modularize code like PyTorch, handle high-dimensional tensor operations, and debug complex batch normalization issues.",
+      "sequence_order": 8,
+      "chapters": [
+        {
+          "id": "makemore_wn_ch1",
+          "title": "Refactoring & PyTorchification",
+          "video_id": "t3YJ5hKiMQ0",
+          "description": "We clean up the codebase by organizing layers into classes that mimic the `torch.nn` API (Linear, Embedding, Flatten, Sequential). We also fix the noisy loss plots using tensor reshaping techniques. ",
+          "start": 0,
+          "end": 1031,
+          "xp_reward": 50,
+          "key_learning_outcomes": [
+            "Modularizing neural network layers",
+            "Implementing a `Sequential` container",
+            "Smoothing plots using tensor views and means"
+          ],
+          "tasks": [
+            {
+              "type": "code",
+              "instruction": "Implement the `forward` method for a custom `Sequential` container that passes input `x` through a list of `layers`.",
+              "template": "class Sequential:\n    def __init__(self, layers):\n        self.layers = layers\n\n    def __call__(self, x):\n        for layer in self.layers:\n            x = ___\n        self.out = x\n        return self.out",
+              "solution": "layer(x)",
+              "hints": [
+                "Iterate through each layer and update x with the output of the layer."
+              ]
+            },
+            {
+              "type": "gap_fill",
+              "instruction": "Smooth a noisy loss list by converting it to a tensor, reshaping, and taking the mean.",
+              "template": "# lossi is a list of floats\nloss_tensor = torch.tensor(lossi)\n# Reshape into rows of 1000 steps each. -1 infers the number of rows.\nloss_matrix = loss_tensor.view(-1, ___)\n# Take the mean along the rows (dimension 1)\nloss_means = loss_matrix.mean(1)",
+              "solution": "1000",
+              "hints": [
+                "We want to average groups of 1000 steps."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "makemore_wn_ch2",
+          "title": "Hierarchical Fusion & WaveNet",
+          "video_id": "t3YJ5hKiMQ0",
+          "description": "We introduce the WaveNet architecture, which uses a tree-like structure to fuse information progressively rather than squashing it all at once.  We implement `FlattenConsecutive` to handle this hierarchy and explore how matrix multiplication works on high-dimensional tensors.",
+          "start": 1031,
+          "end": 2261,
+          "xp_reward": 100,
+          "key_learning_outcomes": [
+            "Concept of hierarchical information fusion",
+            "Matrix multiplication broadcasting on rank > 2 tensors",
+            "Implementing `FlattenConsecutive` for grouping tokens"
+          ],
+          "tasks": [
+            {
+              "type": "quiz",
+              "instruction": "If you perform matrix multiplication between a tensor of shape (4, 5, 80) and a weight matrix of shape (80, 200), what is the resulting shape?",
+              "options": [
+                "(4, 5, 200)",
+                "(4, 80, 200)",
+                "(20, 200)",
+                "Error: Dimensions do not match"
+              ],
+              "solution": "(4, 5, 200)",
+              "hints": [
+                "PyTorch treats dimensions before the last one as batch dimensions and applies the multiplication to the last dimension."
+              ]
+            },
+            {
+              "type": "code",
+              "instruction": "Implement `FlattenConsecutive` to reshape input `(B, T, C)` into `(B, T/n, C*n)`, effectively concatenating `n` consecutive elements.",
+              "template": "class FlattenConsecutive:\n    def __init__(self, n):\n        self.n = n\n        \n    def __call__(self, x):\n        B, T, C = x.shape\n        # We want to group 'n' elements together in the last dimension\n        # New time dimension is T // n\n        # New channel dimension is C * n\n        x = x.view(B, T // self.n, ___)\n        if x.shape[1] == 1: x = x.squeeze(1)\n        self.out = x\n        return self.out",
+              "solution": "C * self.n",
+              "hints": [
+                "The channels multiply by n because we are stacking n vectors side-by-side."
+              ]
+            },
+            {
+              "type": "parsons",
+              "instruction": "Arrange the layers to create a single block of the hierarchical network.",
+              "solution": "FlattenConsecutive(2)\nLinear(n_embd * 2, n_hidden, bias=False)\nBatchNorm1d(n_hidden)\nTanh()",
+              "lines": [
+                "BatchNorm1d(n_hidden)",
+                "Tanh()",
+                "FlattenConsecutive(2)",
+                "Linear(n_embd * 2, n_hidden, bias=False)"
+              ],
+              "hints": [
+                "First fuse elements, then project, then normalize, then activate."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "makemore_wn_ch3",
+          "title": "Debugging BatchNorm & Scaling",
+          "video_id": "t3YJ5hKiMQ0",
+          "description": "We identify and fix a critical bug in our custom `BatchNorm1d` layer where it was averaging over the wrong dimensions for 3D inputs. We then scale up the network parameters to beat the baseline performance.",
+          "start": 2261,
+          "end": 3381,
+          "xp_reward": 100,
+          "key_learning_outcomes": [
+            "Debugging tensor dimension issues",
+            "Adapting BatchNorm for (Batch, Sequence, Feature) shapes",
+            "Experimental mindset in Deep Learning"
+          ],
+          "tasks": [
+            {
+              "type": "quiz",
+              "instruction": "What was the bug in the original `BatchNorm1d` implementation when passed a 3D input (Batch, Sequence, Channels)?",
+              "options": [
+                "It calculated the mean only over the Batch dimension (dim 0), treating the Sequence dimension as independent batches.",
+                "It calculated the mean over the Channels dimension.",
+                "It failed to calculate gradients."
+              ],
+              "solution": "It calculated the mean only over the Batch dimension (dim 0), treating the Sequence dimension as independent batches.",
+              "hints": [
+                "We want a single mean per channel, aggregated over both Batch AND Sequence elements."
+              ]
+            },
+            {
+              "type": "code",
+              "instruction": "Fix the mean calculation in BatchNorm to handle both 2D and 3D inputs correctly.",
+              "template": "# x is the input tensor\nif x.ndim == 2:\n    dim = 0\nelif x.ndim == 3:\n    # We want to average over Batch (0) and Time (1), keeping Channels (2)\n    dim = ___\n\nmean = x.mean(dim, keepdim=True)",
+              "solution": "(0, 1)",
+              "hints": [
+                "Pass a tuple of dimensions to reduce over."
+              ]
+            }
+          ]
+        }
+      ]
     }
+
  
  
 
