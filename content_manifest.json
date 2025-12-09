@@ -693,6 +693,349 @@
           ]
         }
       ]
+    },
+    {
+      "id": "course_makemore_bigram",
+      "title": "Building Makemore: The Bigram Language Model",
+      "thumbnail": "assets/makemore-thumbnail.jpg",
+      "description": "Build a character-level language model from scratch. Start with a probabilistic bigram model using frequency counts, then evolve it into a neural network using PyTorch, covering tensors, broadcasting, softmax, and gradient descent.",
+      "sequence_order": 4,
+      "chapters": [
+        {
+          "id": "makemore_ch1",
+          "title": "Bigrams & Data Exploration",
+          "video_id": "PaCmpygFfXo",
+          "description": "We begin by exploring the `names.txt` dataset and understanding the core concept of a Bigram Language Model: predicting the next character based solely on the previous one. We implement a simple counting mechanism using Python dictionaries.",
+          "start": 0,
+          "end": 765,
+          "xp_reward": 50,
+          "key_learning_outcomes": [
+            "Concept of Character-Level Language Models",
+            "Iterating over strings to form Bigrams",
+            "Using `zip` for sliding windows",
+            "Counting frequencies with Python dictionaries"
+          ],
+          "tasks": [
+            {
+              "type": "code",
+              "instruction": "Use `zip` to iterate over a string `w` and create bigrams (consecutive character pairs).",
+              "template": "w = \"emma\"\n# Create pairs (e, m), (m, m), (m, a)\nfor ch1, ch2 in zip(w, ___):\n    print(ch1, ch2)",
+              "solution": "w[1:]",
+              "hints": [
+                "You want to zip the string with a version of itself shifted by one index."
+              ]
+            },
+            {
+              "type": "gap_fill",
+              "instruction": "Count occurrences of bigrams in a dictionary `b`.",
+              "template": "bigram = (ch1, ch2)\n# Get current count, default to 0 if not found, then add 1\nb[bigram] = b.get(bigram, ___) + 1",
+              "solution": "0",
+              "hints": [
+                "The default value for a counter should be zero."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "makemore_ch2",
+          "title": "Tensors & Visualizing Counts",
+          "video_id": "PaCmpygFfXo",
+          "description": "We migrate from Python dictionaries to PyTorch Tensors for efficiency. We build a 2D integer tensor to store counts and create mappings (`stoi` and `itos`) to convert between characters and integer indices. ",
+          "start": 765,
+          "end": 1442,
+          "xp_reward": 50,
+          "key_learning_outcomes": [
+            "Creating PyTorch Tensors (`torch.zeros`)",
+            "String-to-Integer (`stoi`) and Integer-to-String (`itos`) mappings",
+            "Indexing into 2D Tensors"
+          ],
+          "tasks": [
+            {
+              "type": "gap_fill",
+              "instruction": "Initialize a 27x27 tensor of integers to store the counts.",
+              "template": "import torch\n# We need 27 characters (26 letters + 1 special token)\nN = torch.zeros((27, 27), dtype=torch.___)",
+              "solution": "int32",
+              "hints": [
+                "We are storing counts, so we need an integer type.",
+                "The video suggests int32."
+              ]
+            },
+            {
+              "type": "code",
+              "instruction": "Create the `stoi` (string to integer) mapping for lowercase letters.",
+              "template": "chars = sorted(list(set(''.join(words))))\n# Map characters to integers starting from 1 (reserving 0 for special token)\nstoi = {s:___ for i, s in enumerate(chars)}",
+              "solution": "i+1",
+              "hints": [
+                "Ensure the index `i` is shifted by 1."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "makemore_ch3",
+          "title": "Sampling & Generators",
+          "video_id": "PaCmpygFfXo",
+          "description": "We convert raw counts into probability distributions and use `torch.multinomial` to sample new characters. We also learn about `torch.Generator` to ensure our results are deterministic and reproducible.",
+          "start": 1442,
+          "end": 2177,
+          "xp_reward": 50,
+          "key_learning_outcomes": [
+            "Converting counts to probabilities",
+            "Using `torch.multinomial` for sampling",
+            "Deterministic randomness with `torch.Generator`"
+          ],
+          "tasks": [
+            {
+              "type": "quiz",
+              "instruction": "Why do we use `torch.Generator` with a manual seed?",
+              "options": [
+                "To ensure the random sampling is reproducible every time we run the code.",
+                "To make the code run faster.",
+                "To automatically optimize the tensor operations."
+              ],
+              "solution": "To ensure the random sampling is reproducible every time we run the code.",
+              "hints": [
+                "It allows us to get the exact same 'random' numbers."
+              ]
+            },
+            {
+              "type": "code",
+              "instruction": "Sample 1 index from a probability distribution `p`.",
+              "template": "g = torch.Generator().manual_seed(2147483647)\n# p is a vector of probabilities\nix = torch.multinomial(p, num_samples=___, replacement=True, generator=g).item()",
+              "solution": "1",
+              "hints": [
+                "We only want a single next character index."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "makemore_ch4",
+          "title": "Broadcasting & Vectorization",
+          "video_id": "PaCmpygFfXo",
+          "description": "We optimize the normalization step using vectorization. This chapter dives deep into PyTorch's Broadcasting semantics, a powerful but dangerous feature that can introduce silent bugs if dimensions aren't managed correctly.",
+          "start": 2177,
+          "end": 3014,
+          "xp_reward": 100,
+          "key_learning_outcomes": [
+            "Vectorized row-wise summation",
+            "The `keepdim=True` argument",
+            "PyTorch Broadcasting Rules (Align right, create dimension 1)"
+          ],
+          "tasks": [
+            {
+              "type": "gap_fill",
+              "instruction": "Calculate the sum of each row (dimension 1) while keeping the dimension to allow for broadcasting.",
+              "template": "# P is a (27, 27) tensor\n# We want a (27, 1) vector of sums\nP_sum = P.sum(dim=1, keepdim=___)",
+              "solution": "True",
+              "hints": [
+                "If we don't keep the dimension, it squeezes to (27,), which might broadcast incorrectly as a row vector."
+              ]
+            },
+            {
+              "type": "parsons",
+              "instruction": "Order the steps to correctly normalize the probability matrix P.",
+              "solution": "P = N.float()\nP_sum = P.sum(1, keepdim=True)\nP = P / P_sum",
+              "lines": [
+                "P = P / P_sum",
+                "P_sum = P.sum(1, keepdim=True)",
+                "P = N.float()"
+              ],
+              "hints": [
+                "Convert to float first.",
+                "Calculate the sum.",
+                "Divide."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "makemore_ch5",
+          "title": "Maximum Likelihood & Loss",
+          "video_id": "PaCmpygFfXo",
+          "description": "We introduce the concept of Loss to evaluate the model's quality. We derive the Negative Log Likelihood (NLL) and discuss Model Smoothing to handle infinite loss caused by zero-probability events.",
+          "start": 3014,
+          "end": 3777,
+          "xp_reward": 100,
+          "key_learning_outcomes": [
+            "Likelihood vs Log Likelihood",
+            "Negative Log Likelihood (NLL) as a Loss Function",
+            "Model Smoothing (Fake Counts)"
+          ],
+          "tasks": [
+            {
+              "type": "gap_fill",
+              "instruction": "Calculate the Negative Log Likelihood (NLL) loss.",
+              "template": "# prob is the probability assigned to the correct character\nlog_prob = torch.log(prob)\nloss = -___",
+              "solution": "log_prob",
+              "hints": [
+                "We want to minimize the negative of the log probability."
+              ]
+            },
+            {
+              "type": "quiz",
+              "instruction": "What is the purpose of 'Model Smoothing' (adding counts to N)?",
+              "options": [
+                "To prevent zero probabilities, which cause infinite loss.",
+                "To make the model train faster.",
+                "To reduce the number of parameters."
+              ],
+              "solution": "To prevent zero probabilities, which cause infinite loss.",
+              "hints": [
+                "Log of zero is negative infinity."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "makemore_ch6",
+          "title": "The Neural Network Approach",
+          "video_id": "PaCmpygFfXo",
+          "description": "We shift paradigms from counting to Neural Networks. We prepare the dataset for the NN using One-Hot Encoding and implement the first Linear Layer using Matrix Multiplication. ",
+          "start": 3777,
+          "end": 4726,
+          "xp_reward": 50,
+          "key_learning_outcomes": [
+            "One-Hot Encoding inputs",
+            "Matrix Multiplication (@ operator)",
+            "Initializing weights randomly"
+          ],
+          "tasks": [
+            {
+              "type": "code",
+              "instruction": "One-hot encode a tensor of integers `xs` and cast it to float.",
+              "template": "import torch.nn.functional as F\n# xs contains integers. Encode to 27 classes.\nxenc = F.one_hot(xs, num_classes=27).___()",
+              "solution": "float",
+              "hints": [
+                "Neural networks expect floating point inputs, but one_hot returns integers by default."
+              ]
+            },
+            {
+              "type": "gap_fill",
+              "instruction": "Perform the linear transformation (Matrix Multiplication).",
+              "template": "# xenc is (5, 27), W is (27, 27)\nlogits = xenc ___ W",
+              "solution": "@",
+              "hints": [
+                "Use the Python operator for matrix multiplication."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "makemore_ch7",
+          "title": "Logits & Softmax",
+          "video_id": "PaCmpygFfXo",
+          "description": "We interpret the output of the linear layer as 'logits' (log-counts). We apply the Softmax function (exponentiation followed by normalization) to convert logits into valid probability distributions.",
+          "start": 4726,
+          "end": 5749,
+          "xp_reward": 50,
+          "key_learning_outcomes": [
+            "Interpretation of Logits",
+            "The Softmax Function (exp -> normalize)",
+            "Numerical stability of probabilities"
+          ],
+          "tasks": [
+            {
+              "type": "parsons",
+              "instruction": "Implement the Softmax function on the logits.",
+              "solution": "counts = logits.exp()\nprobs = counts / counts.sum(1, keepdims=True)",
+              "lines": [
+                "probs = counts / counts.sum(1, keepdims=True)",
+                "counts = logits.exp()"
+              ],
+              "hints": [
+                "First, exponentiate the logits to get 'fake counts'.",
+                "Then, normalize the counts to sum to 1."
+              ]
+            },
+            {
+              "type": "quiz",
+              "instruction": "If the logits are negative numbers, what happens when we apply `.exp()`?",
+              "options": [
+                "They become positive numbers between 0 and 1.",
+                "They become negative numbers.",
+                "They become undefined."
+              ],
+              "solution": "They become positive numbers between 0 and 1.",
+              "hints": [
+                "e^x for x < 0 is a small positive number."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "makemore_ch8",
+          "title": "Optimization: Gradient Descent",
+          "video_id": "PaCmpygFfXo",
+          "description": "We implement the full training loop. We calculate the vectorized loss, perform the backward pass (Backpropagation), and update the weights to minimize the loss. ",
+          "start": 5749,
+          "end": 6469,
+          "xp_reward": 100,
+          "key_learning_outcomes": [
+            "Vectorized Loss Calculation",
+            "The Backward Pass (`loss.backward()`)",
+            "Gradient Descent Update (`data += -lr * grad`)"
+          ],
+          "tasks": [
+            {
+              "type": "code",
+              "instruction": "Extract the probabilities assigned to the correct targets for the loss calculation.",
+              "template": "# probs is (5, 27), ys is (5,)\n# We want to pick the probability for the correct label in each row\nloss_probs = probs[torch.arange(5), ___]",
+              "solution": "ys",
+              "hints": [
+                "Use the target labels `ys` as the column indices."
+              ]
+            },
+            {
+              "type": "code",
+              "instruction": "Perform the weight update step.",
+              "template": "# W is the weight tensor\nlearning_rate = 0.1\nW.data += -learning_rate * ___",
+              "solution": "W.grad",
+              "hints": [
+                "We move in the opposite direction of the gradient."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "makemore_ch9",
+          "title": "Regularization & Summary",
+          "video_id": "PaCmpygFfXo",
+          "description": "We discuss the connection between 'Model Smoothing' in the counting approach and 'Weight Regularization' in the neural network. We conclude by sampling from the trained neural network.",
+          "start": 6469,
+          "end": 7064,
+          "xp_reward": 50,
+          "key_learning_outcomes": [
+            "Model Smoothing as Weight Decay",
+            "Sampling from the Neural Network",
+            "Equivalence of Counting and Single-Layer NN"
+          ],
+          "tasks": [
+            {
+              "type": "quiz",
+              "instruction": "How does forcing weights `W` towards zero act as regularization (smoothing)?",
+              "options": [
+                "Zero weights lead to zero logits, which result in a uniform probability distribution.",
+                "Zero weights make the model output zeros.",
+                "It prevents the model from calculating gradients."
+              ],
+              "solution": "Zero weights lead to zero logits, which result in a uniform probability distribution.",
+              "hints": [
+                "exp(0) = 1. If all logits are 0, all counts are 1."
+              ]
+            },
+            {
+              "type": "gap_fill",
+              "instruction": "Before the backward pass in the training loop, what must we do to the gradients?",
+              "template": "# Reset gradients to zero\nW.grad = ___",
+              "solution": "None",
+              "hints": [
+                "In PyTorch, we can set `.grad` to this special value to indicate no gradient."
+              ]
+            }
+          ]
+        }
+      ]
     }
 
   ]
