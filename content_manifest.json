@@ -1942,7 +1942,251 @@
           ]
         }
       ]
+    }, {
+      "id": "course_llm_tokenization",
+      "title": "LLM Tokenization: From Scratch",
+      "thumbnail": "assets/tokenization-thumbnail.jpg",
+      "description": "Let's build the GPT Tokenizer. Master the fundamental 'atom' of Large Language Models: the Token. Build a Byte Pair Encoding (BPE) tokenizer from scratch, understand Unicode and UTF-8, and debug common tokenization issues like the 'SolidGoldMagikarp' bug.",
+      "sequence_order": 9,
+      "chapters": [
+        {
+          "id": "tokenization_ch1",
+          "title": "The Fundamentals: Unicode & UTF-8",
+          "video_id": "zduSFxRajkE",
+          "description": "We explore why LLMs can't just read raw text. We dive into the hierarchy of Python strings, Unicode Code Points, and UTF-8 Byte encodings to prepare the data for the BPE algorithm. ",
+          "start": 0,
+          "end": 1430,
+          "xp_reward": 50,
+          "key_learning_outcomes": [
+            "Strings as sequences of Unicode Code Points",
+            "Translating Code Points to UTF-8 Bytes",
+            "Why raw byte sequences are inefficient for LLMs"
+          ],
+          "tasks": [
+            {
+              "type": "code",
+              "instruction": "Convert a string to a list of its Unicode Code Points.",
+              "template": "text = \"Hi 😃\"\n# Get the integer representation of each character\ncode_points = [___(x) for x in text]",
+              "solution": "ord",
+              "hints": [
+                "The `ord()` function returns the integer representing the Unicode character."
+              ]
+            },
+            {
+              "type": "gap_fill",
+              "instruction": "Convert a string to raw bytes using UTF-8 encoding.",
+              "template": "text = \"Hello World\"\n# Encode into bytes\nbyte_data = text.encode(\"___\")\n# Convert bytes object to list of integers\nbyte_list = list(byte_data)",
+              "solution": "utf-8",
+              "hints": [
+                "This is the standard variable-length encoding for the web."
+              ]
+            },
+            {
+              "type": "quiz",
+              "instruction": "Why don't we just feed raw UTF-8 bytes directly into the Transformer?",
+              "options": [
+                "The sequence length would be too long, making the context window inefficient.",
+                "Computers cannot process bytes.",
+                "UTF-8 is proprietary."
+              ],
+              "solution": "The sequence length would be too long, making the context window inefficient.",
+              "hints": [
+                "Think about how many bytes it takes to represent a single emoji or complex character vs a single token."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "tokenization_ch2",
+          "title": "Byte Pair Encoding (BPE): Training",
+          "video_id": "zduSFxRajkE",
+          "description": "We implement the core logic of the BPE algorithm. We learn how to iteratively count adjacent pairs of bytes, identify the most frequent pair, and merge them to create new tokens, compressing the sequence.",
+          "start": 1430,
+          "end": 2567,
+          "xp_reward": 100,
+          "key_learning_outcomes": [
+            "Counting pair frequencies in a sequence",
+            "Merging the most frequent pair",
+            "Managing vocabulary growth"
+          ],
+          "tasks": [
+            {
+              "type": "code",
+              "instruction": "Implement the function to count pair frequencies.",
+              "template": "def get_stats(ids):\n    counts = {}\n    # Iterate through the list to find consecutive pairs\n    for pair in zip(ids, ids[1:]):\n        counts[pair] = counts.get(pair, 0) + ___\n    return counts",
+              "solution": "1",
+              "hints": [
+                "Increment the count for the found pair."
+              ]
+            },
+            {
+              "type": "parsons",
+              "instruction": "Arrange the steps of the BPE training loop.",
+              "solution": "stats = get_stats(ids)\npair = max(stats, key=stats.get)\nidx = 256 + i\nids = merge(ids, pair, idx)\nmerges[pair] = idx",
+              "lines": [
+                "ids = merge(ids, pair, idx)",
+                "merges[pair] = idx",
+                "stats = get_stats(ids)",
+                "idx = 256 + i",
+                "pair = max(stats, key=stats.get)"
+              ],
+              "hints": [
+                "First calculate stats, find the max, define the new token ID, perform the merge, then save the record."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "tokenization_ch3",
+          "title": "Encoding & Decoding",
+          "video_id": "zduSFxRajkE",
+          "description": "We build the `encode` function to apply our learned merges to new text and the `decode` function to translate tokens back into strings, handling invalid UTF-8 sequences gracefully.",
+          "start": 2567,
+          "end": 3456,
+          "xp_reward": 100,
+          "key_learning_outcomes": [
+            "Applying merges in the correct order (Encode)",
+            "Mapping tokens back to bytes (Decode)",
+            "Handling `errors='replace'` for invalid byte sequences"
+          ],
+          "tasks": [
+            {
+              "type": "gap_fill",
+              "instruction": "Handle invalid byte sequences during decoding to avoid crashes.",
+              "template": "def decode(ids):\n    # ... (byte concatenation logic)\n    # Decode bytes to string, replacing errors\n    text = tokens.decode(\"utf-8\", errors=\"___\")\n    return text",
+              "solution": "replace",
+              "hints": [
+                "This uses the Unicode replacement character () for invalid bytes."
+              ]
+            },
+            {
+              "type": "code",
+              "instruction": "In the encode function, we need to find the next mergeable pair with the lowest index (earliest merge).",
+              "template": "while len(ids) >= 2:\n    stats = get_stats(ids)\n    # Find the pair in stats that exists in 'merges' with the smallest value\n    pair = min(stats, key=lambda p: merges.get(p, float(\"___\")))\n    if pair not in merges:\n        break",
+              "solution": "inf",
+              "hints": [
+                "Use infinity as the default value to ignore pairs not present in our merge rules."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "tokenization_ch4",
+          "title": "Regex & GPT-4 Rules",
+          "video_id": "zduSFxRajkE",
+          "description": "We examine why GPT-2 and GPT-4 use complex Regex patterns to pre-split text. This prevents merging across different categories (e.g., merging punctuation with letters) and improves efficiency for code (Python whitespace). ",
+          "start": 3456,
+          "end": 5128,
+          "xp_reward": 50,
+          "key_learning_outcomes": [
+            "The purpose of pre-tokenization regex splitting",
+            "Handling special tokens (e.g., <|endoftext|>)",
+            "Differences between GPT-2 and GPT-4 whitespace handling"
+          ],
+          "tasks": [
+            {
+              "type": "quiz",
+              "instruction": "What is the primary benefit of using a regex pattern to split text before BPE?",
+              "options": [
+                "It enforces that merges never cross category boundaries (e.g., letters won't merge with punctuation).",
+                "It makes the code run faster on GPUs.",
+                "It automatically translates text to English."
+              ],
+              "solution": "It enforces that merges never cross category boundaries (e.g., letters won't merge with punctuation).",
+              "hints": [
+                "Without this, a word like 'dog' and 'dog.' might become two completely unrelated unique tokens."
+              ]
+            },
+            {
+              "type": "gap_fill",
+              "instruction": "GPT-4's regex handles case sensitivity differently than GPT-2. It uses the `?i` flag.",
+              "template": "# GPT-2 pattern: 's|'t|'re ...\n# GPT-4 pattern: '(?___:[sdmt]|ll|ve|re)...",
+              "solution": "i",
+              "hints": [
+                "This regex flag stands for case-insensitive."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "tokenization_ch5",
+          "title": "Libraries: Tiktoken & SentencePiece",
+          "video_id": "zduSFxRajkE",
+          "description": "We review the industry-standard libraries. `tiktoken` (OpenAI) is fast but inference-only. `sentencepiece` (Google/Llama) handles training and uses a different strategy involving unicode code points and byte fallback.",
+          "start": 5128,
+          "end": 6207,
+          "xp_reward": 50,
+          "key_learning_outcomes": [
+            "Role of `tiktoken` in OpenAI models",
+            "SentencePiece's 'byte fallback' mechanism",
+            "Code points vs Byte-level BPE"
+          ],
+          "tasks": [
+            {
+              "type": "quiz",
+              "instruction": "How does `sentencepiece` (used in Llama) handle rare characters that aren't in the vocabulary?",
+              "options": [
+                "It falls back to UTF-8 bytes to represent them.",
+                "It maps them all to a single <UNK> token.",
+                "It crashes."
+              ],
+              "solution": "It falls back to UTF-8 bytes to represent them.",
+              "hints": [
+                "This ensures the model can process any string without producing 'unknown' tokens."
+              ]
+            },
+            {
+              "type": "gap_fill",
+              "instruction": "SentencePiece introduces a dummy prefix to words. It replaces spaces with an underscore-like character.",
+              "template": "# SentencePiece treats ' world' differently than 'world'\n# It uses the character: U+2581 (Lower One Eighth Block)\n# Often visualized as: ___",
+              "solution": "_",
+              "hints": [
+                "It looks like an underscore."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "tokenization_ch6",
+          "title": "Vocab Size & Quirks",
+          "video_id": "zduSFxRajkE",
+          "description": "We discuss the trade-offs of vocabulary size, how to expand vocabularies for fine-tuning, and investigate the 'SolidGoldMagikarp' bug caused by under-trained tokens.",
+          "start": 6207,
+          "end": 8014,
+          "xp_reward": 50,
+          "key_learning_outcomes": [
+            "Trade-offs: Computation vs Sequence Length vs Under-training",
+            "Resizing Embedding Layers",
+            "The 'SolidGoldMagikarp' phenomenon (Untrained tokens)"
+          ],
+          "tasks": [
+            {
+              "type": "quiz",
+              "instruction": "Why did the 'SolidGoldMagikarp' token cause GPT-3 to hallucinate or glitch?",
+              "options": [
+                "The token existed in the tokenizer vocab but appeared zero times in the training data, leaving its embedding vector un-updated (random noise).",
+                "It was a secret trigger phrase programmed by OpenAI.",
+                "It was a Pokemon copyright issue."
+              ],
+              "solution": "The token existed in the tokenizer vocab but appeared zero times in the training data, leaving its embedding vector un-updated (random noise).",
+              "hints": [
+                "Think about what happens to a vector that is initialized randomly and never receives a gradient update."
+              ]
+            },
+            {
+              "type": "code",
+              "instruction": "If you add 5 new special tokens to a pre-trained model, you must resize the embedding matrix.",
+              "template": "# old_vocab_size = 50257\n# num_new_tokens = 5\nmodel.transformer.wte.weight.resize_(___ + num_new_tokens, embedding_dim)",
+              "solution": "old_vocab_size",
+              "hints": [
+                "The new size is the sum of the old size and the new tokens."
+              ]
+            }
+          ]
+        }
+      ]
     }
+
 
  
  
