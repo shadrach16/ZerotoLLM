@@ -437,7 +437,7 @@
           "id": "micrograd_ch5",
           "title": "Backpropagating a Neuron",
           "video_id": "VMj-3S1tku0",
-          "description": "We build a single Neuron model ($tanh(w \cdot x + b)$) and manually backpropagate gradients through the hyperbolic tangent activation function.",
+          "description": "We build a single Neuron model ($tanh(w \\cdot x + b)$) and manually backpropagate gradients through the hyperbolic tangent activation function.",
           "start": 3172,
           "end": 4142,
           "xp_reward": 100,
@@ -694,6 +694,6 @@
         }
       ]
     }
-    
+
   ]
 }
