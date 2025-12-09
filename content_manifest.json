@@ -1036,6 +1036,214 @@
           ]
         }
       ]
+    },
+    {
+      "id": "course_makemore_mlp",
+      "title": "Building Makemore: The Multi-Layer Perceptron",
+      "thumbnail": "assets/makemore-mlp-thumbnail.jpg",
+      "description": "Upgrade your language model from a simple bigram to a Multi-Layer Perceptron (MLP) following the Bengio et al. 2003 paper. Master embeddings, tensor internals, and proper training methodology.",
+      "sequence_order": 5,
+      "chapters": [
+        {
+          "id": "makemore_mlp_ch1",
+          "title": "Context, Dataset & Embeddings",
+          "video_id": "TCH_1BHY58I",
+          "description": "We explore the limitations of n-gram models and introduce the Neural Probabilistic Language Model (Bengio et al. 2003). We build a dataset with a sliding context window and implement the first layer of the network: the Embedding Lookup Table. ",
+          "start": 0,
+          "end": 1115,
+          "xp_reward": 50,
+          "key_learning_outcomes": [
+            "The curse of dimensionality in n-gram models",
+            "Building a sliding window dataset (X, Y)",
+            "Implementing character embeddings using matrix indexing"
+          ],
+          "tasks": [
+            {
+              "type": "quiz",
+              "instruction": "Why does the table-based n-gram approach fail as we increase the context length (e.g., looking back 10 characters)?",
+              "options": [
+                "The table size grows exponentially, resulting in sparse counts and overfitting.",
+                "Computers cannot handle tables larger than 27x27.",
+                "It becomes impossible to tokenize the characters."
+              ],
+              "solution": "The table size grows exponentially, resulting in sparse counts and overfitting.",
+              "hints": [
+                "Think about how many possible combinations of 10 characters exist (27^10)."
+              ]
+            },
+            {
+              "type": "code",
+              "instruction": "Construct the input dataset `X` and labels `Y` for a block size of 3.",
+              "template": "block_size = 3\nX, Y = [], []\ncontext = [0] * block_size\nfor ch in text:\n    ix = stoi[ch]\n    X.append(context)\n    Y.append(___)\n    context = context[1:] + [___]",
+              "solution": "ix",
+              "hints": [
+                "Y contains the current character index.",
+                "Update the context by appending the new index."
+              ]
+            },
+            {
+              "type": "gap_fill",
+              "instruction": "Implement the embedding lookup. `C` is the embedding matrix, `X` is the tensor of input indices.",
+              "template": "# PyTorch allows indexing with tensors\n# If X is (32, 3) and C is (27, 2)\n# We want the output to be (32, 3, 2)\nemb = C[___]",
+              "solution": "X",
+              "hints": [
+                "You can pass the index tensor directly into the embedding matrix."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "makemore_mlp_ch2",
+          "title": "Tensor Internals & The Hidden Layer",
+          "video_id": "TCH_1BHY58I",
+          "description": "We implement the hidden layer of the MLP. Crucially, we dive deep into PyTorch tensor internals (`storage` vs `view`) to efficiently flatten our input dimensions without copying memory. ",
+          "start": 1115,
+          "end": 1969,
+          "xp_reward": 100,
+          "key_learning_outcomes": [
+            "Efficient reshaping with `.view()` vs `.cat()`",
+            "PyTorch Tensor Internals: Storage vs View",
+            "Implementing the hidden layer calculation ($tanh(XW+b)$)"
+          ],
+          "tasks": [
+            {
+              "type": "quiz",
+              "instruction": "What is the primary advantage of using `.view()` compared to `torch.cat()` when reshaping tensors?",
+              "options": [
+                "`.view()` does not copy memory; it just changes how the underlying storage is interpreted.",
+                "`.view()` automatically calculates gradients.",
+                "`.view()` sorts the data elements."
+              ],
+              "solution": "`.view()` does not copy memory; it just changes how the underlying storage is interpreted.",
+              "hints": [
+                "Think about efficiency and memory allocation."
+              ]
+            },
+            {
+              "type": "parsons",
+              "instruction": "Reshape the embedding tensor `emb` of shape (32, 3, 2) to (32, 6) to feed into the linear layer, using the most efficient method.",
+              "solution": "# emb.shape is (32, 3, 2)\n# We want to flatten the last two dimensions\nflattened = emb.view(emb.shape[0], 6)",
+              "lines": [
+                "flattened = emb.view(emb.shape[0], 6)",
+                "flattened = torch.cat(torch.unbind(emb, 1), 1)",
+                "flattened = emb.storage()"
+              ],
+              "hints": [
+                "Avoid creating new tensors if possible."
+              ]
+            },
+            {
+              "type": "gap_fill",
+              "instruction": "Calculate the hidden states `h`. Remember to apply the non-linearity.",
+              "template": "# emb_view is the flattened input (N, inputs)\n# W1 and b1 are weights and bias\npre_activation = emb_view @ W1 + b1\nh = torch.___(pre_activation)",
+              "solution": "tanh",
+              "hints": [
+                "The Bengio paper and our implementation use the hyperbolic tangent function."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "makemore_mlp_ch3",
+          "title": "Optimization & Training Loop",
+          "video_id": "TCH_1BHY58I",
+          "description": "We professionalize the training loop. We replace our manual loss calculation with `F.cross_entropy` for numerical stability, implement minibatch training for speed, and use a learning rate finder to tune hyperparameters.",
+          "start": 1969,
+          "end": 3200,
+          "xp_reward": 100,
+          "key_learning_outcomes": [
+            "Advantages of `F.cross_entropy` (LogSumExp trick)",
+            "Implementing Minibatches",
+            "Finding a good learning rate using an exponent scan"
+          ],
+          "tasks": [
+            {
+              "type": "quiz",
+              "instruction": "Why is `F.cross_entropy(logits, targets)` preferred over manually calculating `softmax` then `nll_loss`?",
+              "options": [
+                "It uses the LogSumExp trick for numerical stability and efficient backward passes.",
+                "It is the only way to calculate loss in PyTorch.",
+                "It automatically tunes the learning rate."
+              ],
+              "solution": "It uses the LogSumExp trick for numerical stability and efficient backward passes.",
+              "hints": [
+                "Think about what happens if exponentials get very large (overflow)."
+              ]
+            },
+            {
+              "type": "code",
+              "instruction": "Select a minibatch of indices `ix`.",
+              "template": "batch_size = 32\n# X is the training data tensor\n# Generate 32 random indices between 0 and len(X)\nix = torch.randint(0, ___, (batch_size,))",
+              "solution": "X.shape[0]",
+              "hints": [
+                "You need the upper bound of the random integer range."
+              ]
+            },
+            {
+              "type": "gap_fill",
+              "instruction": "Construct the list of learning rates to scan exponentially.",
+              "template": "# Create 1000 exponents between -3 and 0\nlre = torch.linspace(-3, 0, 1000)\n# Calculate actual learning rates\nlrs = 10 ** ___",
+              "solution": "lre",
+              "hints": [
+                "10 to the power of the exponent."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "makemore_mlp_ch4",
+          "title": "Methodology: Splits & Sampling",
+          "video_id": "TCH_1BHY58I",
+          "description": "We discuss proper machine learning methodology: splitting data into Train, Validation, and Test sets to detect overfitting. We scale up the network parameters and conclude by generating samples from our trained MLP.",
+          "start": 3200,
+          "end": 4539,
+          "xp_reward": 50,
+          "key_learning_outcomes": [
+            "Train/Validation/Test Split methodology",
+            "Detecting Overfitting vs Underfitting",
+            "Sampling from the MLP",
+            "Visualizing Embeddings"
+          ],
+          "tasks": [
+            {
+              "type": "quiz",
+              "instruction": "If your training loss is very low but your validation loss is very high, what is likely happening?",
+              "options": [
+                "Overfitting: The model is memorizing the training data but not generalizing.",
+                "Underfitting: The model is too simple to learn the pattern.",
+                "The learning rate is too low."
+              ],
+              "solution": "Overfitting: The model is memorizing the training data but not generalizing.",
+              "hints": [
+                "The model performs great on data it has seen, but fails on new data."
+              ]
+            },
+            {
+              "type": "gap_fill",
+              "instruction": "When sampling, we convert the network output logits into probabilities using this function.",
+              "template": "# logits is the output of the final layer\nprobs = F.___(logits, dim=1)",
+              "solution": "softmax",
+              "hints": [
+                "This function ensures the outputs sum to 1 and are positive."
+              ]
+            },
+            {
+              "type": "parsons",
+              "instruction": "Order the steps to sample a single character from the model.",
+              "solution": "logits = model(context)\nprobs = F.softmax(logits, dim=1)\nix = torch.multinomial(probs, num_samples=1).item()\ncontext = context[1:] + [ix]",
+              "lines": [
+                "probs = F.softmax(logits, dim=1)",
+                "context = context[1:] + [ix]",
+                "ix = torch.multinomial(probs, num_samples=1).item()",
+                "logits = model(context)"
+              ],
+              "hints": [
+                "Forward pass -> Probability -> Sample Index -> Update Context."
+              ]
+            }
+          ]
+        }
+      ]
     }
 
   ]
