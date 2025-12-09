@@ -2,7 +2,7 @@
   "version": 1,
   "courses": [
     {
-      "id": "course_what_is_ai",
+      "id": "course_intro_to_ai",
       "title": "Introduction to Artificial Intelligence",
       "thumbnail": "assets/ai-intro-thumbnail.jpg",
       "description": "A fundamental overview of AI, distinguishing between Weak and Strong AI, and exploring the hierarchy of Machine Learning and Deep Learning.",
