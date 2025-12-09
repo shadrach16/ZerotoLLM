@@ -2426,7 +2426,502 @@
           ]
         }
       ]
+    }, {
+      "id": "course_reproducing_gpt2",
+      "title": "Reproducing GPT-2 (124M) from Scratch",
+      "thumbnail": "assets/gpt2-repro-thumbnail.jpg",
+      "description": "A comprehensive deep dive into recreating OpenAI's GPT-2 (124M) model. This course covers everything from model architecture and weight loading to advanced optimization techniques like Flash Attention, Distributed Data Parallel (DDP), and mixed precision training.",
+      "sequence_order": 11,
+      "chapters": [
+        {
+          "id": "gpt2_ch1_intro",
+          "title": "Exploring GPT-2 & Weights",
+          "video_id": "l8pRSuU81PU",
+          "description": "We analyze the GPT-2 124M architecture, download the official weights using Hugging Face, and inspect the shapes of the parameters, including the positional embeddings. ",
+          "start": 0,
+          "end": 827,
+          "xp_reward": 30,
+          "tasks": [
+            {
+              "type": "quiz",
+              "instruction": "What are the dimensions of the embedding layer in the GPT-2 124M model?",
+              "questions": [
+                {
+                  "question": "What are the dimensions of the embedding layer in the GPT-2 124M model?",
+                  "options": [
+                    "50257 x 768",
+                    "50257 x 1024",
+                    "30522 x 768",
+                    "768 x 768"
+                  ],
+                  "answer": "50257 x 768"
+                }
+              ]
+            },
+            {
+              "type": "code",
+              "instruction": "Load the pretrained GPT-2 model using the Transformers library and access its state dictionary.",
+              "template": "from transformers import GPT2LMHeadModel\n\nmodel = GPT2LMHeadModel.from_pretrained(\"___\")\nsd = model.state_dict()\n\nfor k, v in sd.items():\n    print(k, v.shape)",
+              "solution": "gpt2",
+              "hints": [
+                "The model name string is simply 'gpt2'."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gpt2_ch2_architecture",
+          "title": "Implementing the Architecture",
+          "video_id": "l8pRSuU81PU",
+          "description": "We define the PyTorch `nn.Module` skeleton for GPT-2, ensuring our naming convention matches Hugging Face's for easy weight loading. We set up the configuration dataclass.",
+          "start": 827,
+          "end": 1688,
+          "xp_reward": 50,
+          "tasks": [
+            {
+              "type": "gap_fill",
+              "instruction": "Define the `GPTConfig` class with the standard 124M hyperparameters.",
+              "template": "@dataclass\nclass GPTConfig:\n    block_size: int = 1024\n    vocab_size: int = 50257\n    n_layer: int = 12\n    n_head: int = 12\n    n_embd: int = ___",
+              "solution": "768",
+              "hints": [
+                "The embedding dimension for the base model is 768."
+              ]
+            },
+            {
+              "type": "code",
+              "instruction": "Create the `ModuleDict` structure for the transformer body.",
+              "template": "self.transformer = nn.ModuleDict(dict(\n    wte = nn.Embedding(config.vocab_size, config.n_embd),\n    wpe = nn.Embedding(config.block_size, config.n_embd),\n    h = nn.ModuleList([___(config) for _ in range(config.n_layer)]),\n    ln_f = nn.LayerNorm(config.n_embd),\n))",
+              "solution": "Block",
+              "hints": [
+                "You need to instantiate a 'Block' module for each layer."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gpt2_ch3_loading_forward",
+          "title": "Loading Weights & Forward Pass",
+          "video_id": "l8pRSuU81PU",
+          "description": "We implement the logic to copy weights from the Hugging Face model to our custom implementation, handling transposition for Conv1D weights. We also write the forward pass and generation loop.",
+          "start": 1688,
+          "end": 2750,
+          "xp_reward": 100,
+          "tasks": [
+            {
+              "type": "parsons",
+              "instruction": "Arrange the steps to perform text generation.",
+              "solution": "logits, _ = model(idx)\nlast_logits = logits[:, -1, :]\nprobs = F.softmax(last_logits, dim=-1)\ntopk_probs, topk_indices = torch.topk(probs, 50, dim=-1)\nix = torch.multinomial(topk_probs, 1)\nidx = torch.cat((idx, ix), dim=1)",
+              "lines": [
+                "idx = torch.cat((idx, ix), dim=1)",
+                "probs = F.softmax(last_logits, dim=-1)",
+                "last_logits = logits[:, -1, :]",
+                "logits, _ = model(idx)",
+                "ix = torch.multinomial(topk_probs, 1)",
+                "topk_probs, topk_indices = torch.topk(probs, 50, dim=-1)"
+              ],
+              "hints": [
+                "Get logits -> Focus on last step -> Softmax -> TopK -> Sample -> Append."
+              ]
+            },
+            {
+              "type": "quiz",
+              "instruction": "Why do we need to transpose some weights when copying from the Hugging Face model?",
+              "questions": [
+                {
+                  "question": "Why do we need to transpose some weights when copying from the Hugging Face model?",
+                  "options": [
+                    "Because Hugging Face uses Conv1D layers (weights are [Cin, Cout]) while our Linear layers expect [Cout, Cin].",
+                    "Because TensorFlow and PyTorch use different memory layouts.",
+                    "Because GPT-2 was trained in reverse."
+                  ],
+                  "answer": "Because Hugging Face uses Conv1D layers (weights are [Cin, Cout]) while our Linear layers expect [Cout, Cin]."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gpt2_ch4_training_loop",
+          "title": "Basic Training Loop",
+          "video_id": "l8pRSuU81PU",
+          "description": "We switch to training mode. We prepare the Tiny Shakespeare dataset, implement the standard Cross Entropy Loss, and overfit a single batch to verify the pipeline.",
+          "start": 2750,
+          "end": 3720,
+          "xp_reward": 50,
+          "tasks": [
+            {
+              "type": "code",
+              "instruction": "Calculate the Cross Entropy Loss in the forward pass.",
+              "template": "if targets is not None:\n    # Flatten the logits and targets for cross_entropy\n    loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(___))",
+              "solution": "-1",
+              "hints": [
+                "Targets need to be flattened to a 1D tensor."
+              ]
+            },
+            {
+              "type": "gap_fill",
+              "instruction": "At initialization, for a vocab size of ~50k, the expected loss should be roughly -ln(1/50257) which is approximately ___.",
+              "template": "expected_loss = ___",
+              "solution": "10.8",
+              "hints": [
+                "It's roughly 11."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gpt2_ch5_data_sharing",
+          "title": "Data Loader & Weight Tying",
+          "video_id": "l8pRSuU81PU",
+          "description": "We build a simple `DataLoaderLite` to stream batches of text. We also implement 'Weight Tying', sharing the weights between the token embedding layer and the final output head. ",
+          "start": 3720,
+          "end": 4427,
+          "xp_reward": 100,
+          "tasks": [
+            {
+              "type": "code",
+              "instruction": "Implement Weight Tying in the model constructor.",
+              "template": "# Tie the weights of the embedding layer and the head\nself.transformer.wte.weight = self.lm_head.___",
+              "solution": "weight",
+              "hints": [
+                "They should point to the exact same tensor object."
+              ]
+            },
+            {
+              "type": "quiz",
+              "instruction": "What is the benefit of Weight Tying in GPT-2?",
+              "questions": [
+                {
+                  "question": "What is the benefit of Weight Tying in GPT-2?",
+                  "options": [
+                    "It significantly reduces the parameter count and improves performance.",
+                    "It prevents the gradients from exploding.",
+                    "It allows the model to process images."
+                  ],
+                  "answer": "It significantly reduces the parameter count and improves performance."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gpt2_ch6_initialization",
+          "title": "Initialization Strategies",
+          "video_id": "l8pRSuU81PU",
+          "description": "We implement the specific initialization rules from the GPT-2 paper, including a special scaling rule for residual layers (1/sqrt(N)).",
+          "start": 4427,
+          "end": 4938,
+          "xp_reward": 50,
+          "tasks": [
+            {
+              "type": "code",
+              "instruction": "Implement the special initialization scaling for residual layers.",
+              "template": "if hasattr(module, 'NANOGPT_SCALE_INIT'):\n    # Scale by 1/sqrt(2 * n_layer)\n    module.weight.data *= (2 * config.n_layer) ** ___",
+              "solution": "-0.5",
+              "hints": [
+                "The power of -0.5 is equivalent to 1 over the square root."
+              ]
+            },
+            {
+              "type": "gap_fill",
+              "instruction": "Standard weights are initialized with a normal distribution with a mean of 0 and a standard deviation of ___.",
+              "template": "std = ___",
+              "solution": "0.02",
+              "hints": [
+                "It's a small number, often cited in the GPT-2/BERT papers."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gpt2_ch7_speed_precision",
+          "title": "Speed: Mixed Precision (TF32 & BF16)",
+          "video_id": "l8pRSuU81PU",
+          "description": "We start optimizing for speed. We enable TensorFloat-32 (TF32) on Ampere GPUs and implement BFloat16 mixed precision training using `torch.autocast`. ",
+          "start": 4938,
+          "end": 6495,
+          "xp_reward": 100,
+          "tasks": [
+            {
+              "type": "code",
+              "instruction": "Enable TF32 on the GPU.",
+              "template": "torch.backends.cuda.matmul.allow_tf32 = ___\ntorch.backends.cudnn.allow_tf32 = ___",
+              "solution": "True",
+              "hints": [
+                "Just set the flag to True."
+              ]
+            },
+            {
+              "type": "code",
+              "instruction": "Wrap the forward pass and loss calculation in the autocast context manager.",
+              "template": "with torch.autocast(device_type=\"cuda\", dtype=torch.___):\n    logits, loss = model(x, y)",
+              "solution": "bfloat16",
+              "hints": [
+                "We prefer bfloat16 over float16 for stability on Ampere GPUs."
+              ]
+            },
+            {
+              "type": "quiz",
+              "instruction": "Why is BFloat16 often preferred over Float16 for training LLMs?",
+              "questions": [
+                {
+                  "question": "Why is BFloat16 often preferred over Float16 for training LLMs?",
+                  "options": [
+                    "It has the same exponent range as Float32, preventing underflow/overflow without needing gradient scaling.",
+                    "It has more precision bits than Float32.",
+                    "It is the only format supported by NVIDIA."
+                  ],
+                  "answer": "It has the same exponent range as Float32, preventing underflow/overflow without needing gradient scaling."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gpt2_ch8_speed_compile_flash",
+          "title": "Speed: Compilation & Flash Attention",
+          "video_id": "l8pRSuU81PU",
+          "description": "We introduce `torch.compile` to fuse kernels and reduce Python overhead. We then inspect the benefits of Flash Attention for IO-aware exact attention computation. ",
+          "start": 6495,
+          "end": 7614,
+          "xp_reward": 100,
+          "tasks": [
+            {
+              "type": "gap_fill",
+              "instruction": "To compile the model for faster execution, we use the command `model = torch.___(model)`.",
+              "solution": "compile",
+              "hints": [
+                "It's a top-level torch function introduced in PyTorch 2.0."
+              ]
+            },
+            {
+              "type": "code",
+              "instruction": "Replace manual attention implementation with the efficient PyTorch function.",
+              "template": "y = F.scaled_dot_product_attention(q, k, v, is_causal=___)",
+              "solution": "True",
+              "hints": [
+                "For GPT, the attention must be causal (masked)."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gpt2_ch9_vocab_optimization",
+          "title": "Speed: The Power of Nice Numbers",
+          "video_id": "l8pRSuU81PU",
+          "description": "A weird but effective optimization: increasing the vocabulary size from 50,257 to 50,304 to align with powers of 2, making GPU kernels more efficient.",
+          "start": 7614,
+          "end": 8095,
+          "xp_reward": 50,
+          "tasks": [
+            {
+              "type": "quiz",
+              "instruction": "Why does changing the vocab size from 50257 to 50304 speed up training?",
+              "questions": [
+                {
+                  "question": "Why does changing the vocab size from 50257 to 50304 speed up training?",
+                  "options": [
+                    "50304 is divisible by large powers of 2 (like 128), which aligns better with GPU memory/compute tiles, avoiding inefficient boundary checks.",
+                    "It reduces the number of parameters in the model.",
+                    "It prevents the model from generating padding tokens."
+                  ],
+                  "answer": "50304 is divisible by large powers of 2 (like 128), which aligns better with GPU memory/compute tiles, avoiding inefficient boundary checks."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gpt2_ch10_hyperparams",
+          "title": "Hyperparameters & Learning Rates",
+          "video_id": "l8pRSuU81PU",
+          "description": "We implement the learning rate scheduler (warmup + cosine decay) and add gradient clipping to stabilize training.",
+          "start": 8095,
+          "end": 8781,
+          "xp_reward": 50,
+          "tasks": [
+            {
+              "type": "code",
+              "instruction": "Implement the cosine decay learning rate logic.",
+              "template": "decay_ratio = (it - warmup_steps) / (max_steps - warmup_steps)\ncoeff = 0.5 * (1.0 + math.cos(math.pi * ___))\nlr = min_lr + coeff * (max_lr - min_lr)",
+              "solution": "decay_ratio",
+              "hints": [
+                "The cosine function takes an argument based on how far along the decay we are."
+              ]
+            },
+            {
+              "type": "gap_fill",
+              "instruction": "To prevent exploding gradients, we use `torch.nn.utils.___` before the optimizer step.",
+              "template": "norm = torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)",
+              "solution": "clip_grad_norm_",
+              "hints": [
+                "It limits the norm of the gradients."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gpt2_ch11_grad_accumulation",
+          "title": "Gradient Accumulation",
+          "video_id": "l8pRSuU81PU",
+          "description": "We simulate a large batch size (e.g., 0.5M tokens) on limited hardware by accumulating gradients over multiple micro-steps before updating the weights.",
+          "start": 8781,
+          "end": 10012,
+          "xp_reward": 100,
+          "tasks": [
+            {
+              "type": "parsons",
+              "instruction": "Construct the training loop with gradient accumulation.",
+              "solution": "for micro_step in range(grad_accum_steps):\n    logits, loss = model(x, y)\n    loss = loss / grad_accum_steps\n    loss.backward()\noptimizer.step()\noptimizer.zero_grad()",
+              "lines": [
+                "optimizer.step()",
+                "loss.backward()",
+                "loss = loss / grad_accum_steps",
+                "logits, loss = model(x, y)",
+                "for micro_step in range(grad_accum_steps):",
+                "optimizer.zero_grad()"
+              ],
+              "hints": [
+                "The inner loop accumulates gradients. The optimizer step happens once after the loop."
+              ]
+            },
+            {
+              "type": "quiz",
+              "instruction": "Why must we divide the loss by `grad_accum_steps` before calling backward?",
+              "questions": [
+                {
+                  "question": "Why must we divide the loss by `grad_accum_steps` before calling backward?",
+                  "options": [
+                    "To ensure the accumulated gradient averages out correctly, mimicking the mean loss of a single large batch.",
+                    "To prevent memory leaks.",
+                    "To speed up the backward pass."
+                  ],
+                  "answer": "To ensure the accumulated gradient averages out correctly, mimicking the mean loss of a single large batch."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gpt2_ch12_ddp",
+          "title": "Distributed Data Parallel (DDP)",
+          "video_id": "l8pRSuU81PU",
+          "description": "We scale up to multiple GPUs using DDP. We handle process ranks, data sharding, and gradient synchronization.",
+          "start": 10012,
+          "end": 11421,
+          "xp_reward": 100,
+          "tasks": [
+            {
+              "type": "code",
+              "instruction": "Initialize the process group for DDP.",
+              "template": "from torch.distributed import init_process_group\ninit_process_group(backend=\"___\")",
+              "solution": "nccl",
+              "hints": [
+                "The standard backend for NVIDIA GPUs starts with 'n'."
+              ]
+            },
+            {
+              "type": "gap_fill",
+              "instruction": "In DDP, each process needs to know its global `rank`, local `local_rank`, and the total number of processes called `___`.",
+              "solution": "world_size",
+              "hints": [
+                "It sounds like the size of the whole world."
+              ]
+            },
+            {
+              "type": "code",
+              "instruction": "Wrap the model with DistributedDataParallel.",
+              "template": "model = DDP(model, device_ids=[___])",
+              "solution": "ddp_local_rank",
+              "hints": [
+                "You pass the ID of the specific GPU this process is using."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gpt2_ch13_datasets",
+          "title": "FineWeb & Data Processing",
+          "video_id": "l8pRSuU81PU",
+          "description": "We switch to a real dataset: FineWeb-Edu. We discuss downloading, tokenizing, and sharding the data into numpy files for efficient streaming.",
+          "start": 11421,
+          "end": 12190,
+          "xp_reward": 50,
+          "tasks": [
+            {
+              "type": "quiz",
+              "instruction": "What is the FineWeb-Edu dataset?",
+              "questions": [
+                {
+                  "question": "What is the FineWeb-Edu dataset?",
+                  "options": [
+                    "A high-quality subset of Common Crawl filtered for educational value.",
+                    "A collection of Shakespeare's works.",
+                    "A dataset of Wikipedia articles only."
+                  ],
+                  "answer": "A high-quality subset of Common Crawl filtered for educational value."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gpt2_ch14_validation",
+          "title": "Validation & HellaSwag Eval",
+          "video_id": "l8pRSuU81PU",
+          "description": "We implement a rigorous evaluation loop. We check validation loss and implement the HellaSwag benchmark logic to track model intelligence during training.",
+          "start": 12190,
+          "end": 13385,
+          "xp_reward": 100,
+          "tasks": [
+            {
+              "type": "code",
+              "instruction": "In the HellaSwag evaluation, we pick the completion with the ___ average loss per token.",
+              "template": "pred = losses.argmin()",
+              "solution": "lowest",
+              "hints": [
+                "Lower loss means higher probability."
+              ]
+            },
+            {
+              "type": "gap_fill",
+              "instruction": "When evaluating distributedly, we must gather results from all GPUs. We use `dist.___` to sum up the correct predictions across all ranks.",
+              "solution": "all_reduce",
+              "hints": [
+                "It reduces (aggregates) data across all processes."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gpt2_ch15_results",
+          "title": "Results & Conclusion",
+          "video_id": "l8pRSuU81PU",
+          "description": "We analyze the final training run, comparing our loss curves to OpenAI's GPT-2 and GPT-3 baselines. We discuss potential improvements and the llm.c C/CUDA implementation.",
+          "start": 13385,
+          "end": 14485,
+          "xp_reward": 50,
+          "tasks": [
+            {
+              "type": "quiz",
+              "instruction": "Did the 124M model trained on FineWeb-Edu for 10B tokens beat the original GPT-2 124M model on HellaSwag?",
+              "questions": [
+                {
+                  "question": "Did the 124M model trained on FineWeb-Edu for 10B tokens beat the original GPT-2 124M model on HellaSwag?",
+                  "options": [
+                    "Yes, it surpassed the original GPT-2 baseline significantly.",
+                    "No, it failed to converge.",
+                    "It was exactly the same."
+                  ],
+                  "answer": "Yes, it surpassed the original GPT-2 baseline significantly."
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
+ 
  
 
 
