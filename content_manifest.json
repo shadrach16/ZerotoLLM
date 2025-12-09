@@ -277,7 +277,7 @@
           ]
         }
       ]
-    },
+    }, 
     {
       "id": "course_micrograd",
       "title": "Building Micrograd: Backpropagation from Scratch",
@@ -694,5 +694,6 @@
         }
       ]
     }
+    
   ]
 }
