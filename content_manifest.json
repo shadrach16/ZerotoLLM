@@ -5,6 +5,7 @@
       "id": "course_intro_to_ai",
       "title": "Introduction to Artificial Intelligence",
       "thumbnail": "assets/intro-to-ai-thumbnail.jpg",
+      "description": "An overview of Artificial Intelligence, its core capabilities", 
       "sequence_order": 1,
       "chapters": [
         {
