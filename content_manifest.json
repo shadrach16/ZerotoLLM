@@ -1244,7 +1244,279 @@
           ]
         }
       ]
+    },{
+      "id": "course_makemore_batchnorm",
+      "title": "Makemore: Initialization & Batch Normalization",
+      "thumbnail": "assets/makemore-batchnorm-thumbnail.jpg",
+      "description": "Deep dive into the 'black magic' of training deep neural networks. Learn how to diagnose training issues, properly initialize weights (Kaiming Init), and implement Batch Normalization from scratch to stabilize training.",
+      "sequence_order": 6,
+      "chapters": [
+        {
+          "id": "makemore_bn_ch1",
+          "title": "Diagnosing Initialization",
+          "video_id": "P6sfmUTpUmc",
+          "description": "We analyze the initial loss of the network and realize it is 'confidently wrong'.  We fix this by scaling down the output weights to ensure a uniform probability distribution at the start.",
+          "start": 0,
+          "end": 779,
+          "xp_reward": 50,
+          "key_learning_outcomes": [
+            "Calculating expected initial loss (-log(1/vocab_size))",
+            "The 'Hockey Stick' loss curve phenomenon",
+            "Initializing output logits to be small/uniform"
+          ],
+          "tasks": [
+            {
+              "type": "quiz",
+              "instruction": "If you have a vocabulary of 27 characters and initialize your network correctly, what should the initial loss roughly be?",
+              "options": [
+                "Approximately 3.3 (-log(1/27))",
+                "Approximately 27.0",
+                "Exactly 0.0"
+              ],
+              "solution": "Approximately 3.3 (-log(1/27))",
+              "hints": [
+                "It should be the negative log likelihood of a uniform distribution."
+              ]
+            },
+            {
+              "type": "code",
+              "instruction": "Scale down the weights `W2` and biases `b2` of the final layer to ensure logits are close to zero at initialization.",
+              "template": "# W2 is shape (n_hidden, vocab_size), b2 is (vocab_size)\nW2 = torch.randn((n_hidden, vocab_size)) * ___\nb2 = torch.randn(vocab_size) * ___",
+              "solution": "W2 = torch.randn((n_hidden, vocab_size)) * 0.01\nb2 = torch.randn(vocab_size) * 0",
+              "hints": [
+                "Multiply weights by a small number (e.g., 0.01).",
+                "Set biases to zero."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "makemore_bn_ch2",
+          "title": "Activations & The Vanishing Gradient",
+          "video_id": "P6sfmUTpUmc",
+          "description": "We visualize the hidden layer activations and discover they are saturated at -1 and 1. We explore how this causes the 'Vanishing Gradient' problem for Tanh units and discuss the concept of 'Dead Neurons' in ReLU networks.",
+          "start": 779,
+          "end": 1673,
+          "xp_reward": 100,
+          "key_learning_outcomes": [
+            "Visualizing activation histograms",
+            "Tanh derivative property (1 - t^2)",
+            "The problem of saturated activations stopping backprop"
+          ],
+          "tasks": [
+            {
+              "type": "quiz",
+              "instruction": "If a Tanh neuron's output is 1.0 or -1.0, what happens to the gradient flowing through it during backpropagation?",
+              "options": [
+                "It becomes zero (destroyed).",
+                "It becomes 1 (passed through).",
+                "It becomes infinite (exploded)."
+              ],
+              "solution": "It becomes zero (destroyed).",
+              "hints": [
+                "The derivative of tanh(x) is 1 - tanh(x)^2."
+              ]
+            },
+            {
+              "type": "gap_fill",
+              "instruction": "Check for saturated neurons. We consider a neuron saturated if its absolute value is close to 1.",
+              "template": "h_preact = emb @ W1 + b1\n# Create a boolean tensor where True indicates saturation\nsaturated = h_preact.abs() > ___\n# Check if any neuron is saturated for ALL examples (dead neuron)\ndead_neurons = saturated.all(dim=0).any()",
+              "solution": "0.97",
+              "hints": [
+                "Pick a threshold close to 1, like 0.97 or 0.99."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "makemore_bn_ch3",
+          "title": "Kaiming Initialization",
+          "video_id": "P6sfmUTpUmc",
+          "description": "We implement a principled way to initialize weights to keep activation variance constant throughout the network, known as Kaiming (or He) Initialization.",
+          "start": 1673,
+          "end": 2440,
+          "xp_reward": 100,
+          "key_learning_outcomes": [
+            "The goal of preserving variance (std=1) across layers",
+            "The Kaiming Init formula: gain / sqrt(fan_in)",
+            "Gain values for Tanh vs ReLU"
+          ],
+          "tasks": [
+            {
+              "type": "code",
+              "instruction": "Implement Kaiming Normal initialization for a Tanh layer.",
+              "template": "fan_in = 30 # dimensionality of input\n# Gain for Tanh is usually 5/3\ngain = 5/3\n# Standard deviation should be gain / sqrt(fan_in)\nstd = gain / (fan_in ** ___)\nW1 = torch.randn((fan_in, 200)) * std",
+              "solution": "0.5",
+              "hints": [
+                "Power of 0.5 is the square root."
+              ]
+            },
+            {
+              "type": "parsons",
+              "instruction": "Arrange the logic explaining why we scale weights by 1/sqrt(fan_in).",
+              "solution": "Multiplying inputs by weights increases the variance of the output\nTo counteract this expansion, we must scale down the weights\nThe correct scale factor is 1 over the square root of the number of inputs",
+              "lines": [
+                "The correct scale factor is 1 over the square root of the number of inputs",
+                "Multiplying inputs by weights increases the variance of the output",
+                "To counteract this expansion, we must scale down the weights"
+              ],
+              "hints": [
+                "Start with the problem (variance expansion)."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "makemore_bn_ch4",
+          "title": "Batch Normalization: Training",
+          "video_id": "P6sfmUTpUmc",
+          "description": "We introduce the 2015 innovation that stabilized deep networks: Batch Normalization. We implement the layer from scratch, normalizing inputs to be unit Gaussian and then scaling/shifting them.",
+          "start": 2440,
+          "end": 3240,
+          "xp_reward": 100,
+          "key_learning_outcomes": [
+            "Calculating Mean and Variance of a batch",
+            "Normalizing inputs: (x - mean) / sqrt(var + eps)",
+            "Learnable Scale (Gamma) and Shift (Beta) parameters"
+          ],
+          "tasks": [
+            {
+              "type": "code",
+              "instruction": "Calculate the mean and variance of the pre-activations `hpreact` across the batch dimension (dim 0).",
+              "template": "# hpreact shape is (32, 200)\n# We want mean shape to be (1, 200) for broadcasting\nbn_mean = hpreact.mean(dim=0, keepdim=___)\nbn_var = hpreact.var(dim=0, keepdim=___)",
+              "solution": "True",
+              "hints": [
+                "We need to keep the dimensions to allow for proper broadcasting later."
+              ]
+            },
+            {
+              "type": "parsons",
+              "instruction": "Order the operations inside the Batch Normalization forward pass.",
+              "solution": "Calculate batch mean and variance\nNormalize inputs to unit variance (standardization)\nScale and shift using learned parameters (gamma, beta)",
+              "lines": [
+                "Scale and shift using learned parameters (gamma, beta)",
+                "Calculate batch mean and variance",
+                "Normalize inputs to unit variance (standardization)"
+              ],
+              "hints": [
+                "You must know the stats before you can normalize."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "makemore_bn_ch5",
+          "title": "Batch Normalization: Inference",
+          "video_id": "P6sfmUTpUmc",
+          "description": "We solve the problem of how to use BatchNorm with single examples at inference time. We introduce running buffers (running_mean, running_var) and update them with momentum.",
+          "start": 3240,
+          "end": 3890,
+          "xp_reward": 100,
+          "key_learning_outcomes": [
+            "Training vs Inference behavior of BatchNorm",
+            "Running Mean/Var buffers",
+            "Momentum updates for running stats"
+          ],
+          "tasks": [
+            {
+              "type": "quiz",
+              "instruction": "Why can't we just use the batch statistics during inference (test time)?",
+              "options": [
+                "We might be processing a single example, so variance would be undefined/zero.",
+                "It is too computationally expensive.",
+                "The paper says not to."
+              ],
+              "solution": "We might be processing a single example, so variance would be undefined/zero.",
+              "hints": [
+                "Statistics require a population. A single example has no mean/var relative to itself."
+              ]
+            },
+            {
+              "type": "code",
+              "instruction": "Update the running mean using a small momentum (e.g., 0.001).",
+              "template": "momentum = 0.001\n# Exponential moving average update\nrunning_mean = (1 - momentum) * running_mean + momentum * ___",
+              "solution": "bn_mean",
+              "hints": [
+                "We mix the old running mean with the current batch mean."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "makemore_bn_ch6",
+          "title": "Productionizing: Modules & ResNet",
+          "video_id": "P6sfmUTpUmc",
+          "description": "We restructure our messy code into PyTorch-style classes (`nn.Module`). We also briefly look at ResNet code to see these same principles (BatchNorm, Conv, ReLU) applied in state-of-the-art architectures.",
+          "start": 3890,
+          "end": 5211,
+          "xp_reward": 50,
+          "key_learning_outcomes": [
+            "Structure of PyTorch `nn.Module`",
+            "Implementing `__init__` and `__call__`",
+            "Structure of a ResNet block (Conv -> BN -> ReLU)"
+          ],
+          "tasks": [
+            {
+              "type": "gap_fill",
+              "instruction": "Complete the initialization of the Linear layer class.",
+              "template": "class Linear:\n    def __init__(self, fan_in, fan_out, bias=True):\n        self.weight = torch.randn((fan_in, fan_out)) / (fan_in**0.5)\n        self.bias = torch.zeros(fan_out) if ___ else None",
+              "solution": "bias",
+              "hints": [
+                "Check the boolean argument provided to the constructor."
+              ]
+            },
+            {
+              "type": "code",
+              "instruction": "Implement the Linear layer forward pass in `__call__`.",
+              "template": "def __call__(self, x):\n    self.out = x @ self.weight\n    if self.bias is not None:\n        self.out += ___\n    return self.out",
+              "solution": "self.bias",
+              "hints": [
+                "Add the bias if it exists."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "makemore_bn_ch7",
+          "title": "Diagnostic Visualizations",
+          "video_id": "P6sfmUTpUmc",
+          "description": "We create powerful visualization tools to inspect the health of our network: activation histograms, gradient histograms, and the update-to-data ratio. ",
+          "start": 5211,
+          "end": 6957,
+          "xp_reward": 50,
+          "key_learning_outcomes": [
+            "Interpreting Activation Histograms (Checking for saturation)",
+            "Checking Gradient Distributions",
+            "Update-to-Data Ratio (Ideal: ~1e-3)"
+          ],
+          "tasks": [
+            {
+              "type": "code",
+              "instruction": "Calculate the 'Update to Data' ratio for logging.",
+              "template": "# lr is learning rate, grad is gradient, data is parameter value\nupdate = lr * grad.std()\ndata = param.std()\nratio = update / ___\nlog_ratio = ratio.log10()",
+              "solution": "data",
+              "hints": [
+                "We want the ratio of the update size to the parameter size."
+              ]
+            },
+            {
+              "type": "quiz",
+              "instruction": "If your Update-to-Data ratio is around -3.0 (on a log10 scale), what does this indicate?",
+              "options": [
+                "The updates are roughly 1/1000th the size of the weights. This is a good sweet spot.",
+                "The updates are way too large; the model is exploding.",
+                "The updates are essentially zero; the model isn't learning."
+              ],
+              "solution": "The updates are roughly 1/1000th the size of the weights. This is a good sweet spot.",
+              "hints": [
+                "10^-3 is 0.001."
+              ]
+            }
+          ]
+        }
+      ]
     }
+ 
 
   ]
 }
