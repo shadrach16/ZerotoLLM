@@ -277,6 +277,544 @@
           ]
         }
       ]
+    },
+     
+    {
+      "id": "course_micrograd_basics",
+      "title": "Building Micrograd: Backpropagation from Scratch",
+      "thumbnail": "assets/micrograd-thumbnail.jpg",
+      "description": "Master the fundamentals of neural networks by building 'micrograd', a tiny autograd engine, line-by-line in Python. ",
+      "sequence_order": 3,
+      "chapters": [
+        {
+          "id": "micrograd_ch01",
+          "title": "Introduction to Micrograd",
+          "video_id": "VMj-3S1tku0",
+          "description": "An overview of micrograd, a scalar-valued autograd engine. We explore how it builds mathematical expression graphs to perform backpropagation for neural networks.",
+          "start": 0,
+          "end": 488,
+          "xp_reward": 50,
+          "key_learning_outcomes": [
+            "What is an Autograd Engine?",
+            "Scalar-valued vs Tensor-valued engines",
+            "The purpose of Backpropagation"
+          ],
+          "tasks": [
+            {
+              "type": "quiz",
+              "instruction": "What is the primary function of the 'micrograd' library being built in this course?",
+              "options": [
+                "To implement Automatic Gradient (Backpropagation) for mathematical expressions.",
+                "To optimize SQL database queries.",
+                "To create 3D graphics for video games."
+              ],
+              "solution": "To implement Automatic Gradient (Backpropagation) for mathematical expressions.",
+              "hints": [
+                "It calculates derivatives automatically.",
+                "It's the core machinery behind training neural networks."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "micrograd_ch02",
+          "title": "Understanding Derivatives",
+          "video_id": "VMj-3S1tku0",
+          "description": "We define the derivative intuitively and mathematically using the difference quotient (rise over run) to measure a function's sensitivity to its input.",
+          "start": 488,
+          "end": 852,
+          "xp_reward": 75,
+          "key_learning_outcomes": [
+            "Numerical definition of a derivative",
+            "Intuition of Slope and Sensitivity",
+            "Estimating derivatives with a small 'h'"
+          ],
+          "tasks": [
+            {
+              "type": "code",
+              "instruction": "Implement the numerical approximation of a derivative for function f at point x using a small step h.",
+              "template": "def get_derivative(f, x, h=0.0001):\n    # Rise over run\n    return (___ - f(x)) / ___",
+              "solution": "def get_derivative(f, x, h=0.0001):\n    # Rise over run\n    return (f(x + h) - f(x)) / h",
+              "hints": [
+                "Calculate the function value at a slightly nudged x.",
+                "Divide the difference by the step size."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "micrograd_ch03",
+          "title": "Multivariate Derivatives",
+          "video_id": "VMj-3S1tku0",
+          "description": "Extending derivatives to functions with multiple inputs (a, b, c). We learn how to calculate partial derivatives by nudging one input while keeping others fixed.",
+          "start": 852,
+          "end": 1149,
+          "xp_reward": 75,
+          "key_learning_outcomes": [
+            "Partial Derivatives",
+            "Effect of adding vs multiplying inputs on derivatives",
+            "Manual numeric gradient checking"
+          ],
+          "tasks": [
+            {
+              "type": "quiz",
+              "instruction": "For a function `d = a * b`, what is the derivative of `d` with respect to `a`?",
+              "options": [
+                "b",
+                "a",
+                "0"
+              ],
+              "solution": "b",
+              "hints": [
+                "If `a` increases, `d` increases proportional to `b`.",
+                "Think of the power rule or simply the coefficient."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "micrograd_ch04",
+          "title": "The Value Object",
+          "video_id": "VMj-3S1tku0",
+          "description": "We start coding the core `Value` class, which wraps scalar numbers and tracks connectivity to build a computational graph.",
+          "start": 1149,
+          "end": 1500,
+          "xp_reward": 100,
+          "key_learning_outcomes": [
+            "Wrapping Python scalars",
+            "Operator overloading (__add__, __mul__)",
+            "Tracking children nodes for the graph"
+          ],
+          "tasks": [
+            {
+              "type": "gap_fill",
+              "instruction": "Complete the `__add__` method to return a new Value object that tracks its parents (children in the graph).",
+              "template": "class Value:\n    def __init__(self, data, _children=(), _op=''):\n        self.data = data\n        self._prev = set(_children)\n        self._op = _op\n\n    def __add__(self, other):\n        other = other if isinstance(other, Value) else Value(other)\n        out = Value(self.data + other.data, (___, ___), '+')\n        return out",
+              "solution": "self, other",
+              "hints": [
+                "You need to pass the two operands as the parents.",
+                "The tuple contains the objects that created this new value."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "micrograd_ch05",
+          "title": "Visualizing the Graph",
+          "video_id": "VMj-3S1tku0",
+          "description": "We implement Graphviz visualization to see our expression graph and introduce the `grad` attribute to store derivatives.",
+          "start": 1500,
+          "end": 1930,
+          "xp_reward": 50,
+          "key_learning_outcomes": [
+            "Graph visualization (Nodes and Edges)",
+            "Initializing Gradients (self.grad)",
+            "Meaning of grad=0"
+          ],
+          "tasks": [
+            {
+              "type": "gap_fill",
+              "instruction": "Initialize the gradient in the Value class. It represents the derivative of the final output with respect to this node.",
+              "template": "class Value:\n    def __init__(self, data):\n        self.data = data\n        # Gradient starts at 0 (no effect assumed initially)\n        self.grad = ___",
+              "solution": "0.0",
+              "hints": [
+                "It should be a float.",
+                "Zero indicates no sensitivity initially."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "micrograd_ch06",
+          "title": "Manual Backpropagation I",
+          "video_id": "VMj-3S1tku0",
+          "description": "We perform backpropagation manually for a simple expression `L = d * f`. We calculate local derivatives and use the chain rule to propagate them.",
+          "start": 1930,
+          "end": 2500,
+          "xp_reward": 100,
+          "key_learning_outcomes": [
+            "Base case gradient (dL/dL = 1)",
+            "Derivative of Multiplication (routing values)",
+            "Derivative of Addition (routing gradients)"
+          ],
+          "tasks": [
+            {
+              "type": "quiz",
+              "instruction": "In a computation graph, what is the 'local derivative' of an addition node `d = c + e` with respect to `c`?",
+              "options": [
+                "1.0",
+                "c",
+                "e"
+              ],
+              "solution": "1.0",
+              "hints": [
+                "If you increase `c` by h, `d` increases by exactly h.",
+                "The slope is 1."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "micrograd_ch07",
+          "title": "The Chain Rule & Deep Backprop",
+          "video_id": "VMj-3S1tku0",
+          "description": "A deep dive into the recursive application of the Chain Rule. We manually backpropagate through the entire graph to find derivatives for input nodes `a` and `b`.",
+          "start": 2500,
+          "end": 3070,
+          "xp_reward": 100,
+          "key_learning_outcomes": [
+            "The Chain Rule formula",
+            "Recursive multiplication of gradients",
+            "Global derivative = Local Derivative * Upstream Gradient"
+          ],
+          "tasks": [
+            {
+              "type": "gap_fill",
+              "instruction": "Complete the Chain Rule application. We want dL/dc.",
+              "template": "# dL/dc = (dL/dd) * (dd/dc)\n# We know dL/dd is stored in d.grad\n# We know dd/dc (local derivative) is 1.0 for addition\nc.grad = ___ * 1.0",
+              "solution": "d.grad",
+              "hints": [
+                "We multiply the upstream gradient by the local derivative.",
+                "The upstream gradient comes from the parent node d."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "micrograd_ch08",
+          "title": "Neurons & Activation Functions",
+          "video_id": "VMj-3S1tku0",
+          "description": "We introduce the biological inspiration for neurons, the dot product formula, and the Tanh activation function. We verify a single optimization step.",
+          "start": 3070,
+          "end": 3600,
+          "xp_reward": 75,
+          "key_learning_outcomes": [
+            "Neuron formula: sum(w*x) + b",
+            "Tanh activation function (squashing)",
+            "Effect of gradient descent step"
+          ],
+          "tasks": [
+            {
+              "type": "code",
+              "instruction": "Implement the Tanh operation in the Value class. (Note: using math.tanh for the forward pass).",
+              "template": "import math\n\ndef tanh(self):\n    x = self.data\n    t = (math.exp(2*x) - 1) / (math.exp(2*x) + 1)\n    out = Value(t, (self, ), 'tanh')\n    return out",
+              "solution": "import math\n\ndef tanh(self):\n    x = self.data\n    t = (math.exp(2*x) - 1) / (math.exp(2*x) + 1)\n    out = Value(t, (self, ), 'tanh')\n    return out",
+              "hints": [
+                "Just review the math formula.",
+                "Ensure the child is set to `(self, )`."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "micrograd_ch09",
+          "title": "Manual Backprop: The Neuron",
+          "video_id": "VMj-3S1tku0",
+          "description": "We manually derive the gradients for a single neuron, including the derivative of Tanh (1 - tanh^2) and the weights.",
+          "start": 3600,
+          "end": 4142,
+          "xp_reward": 100,
+          "key_learning_outcomes": [
+            "Derivative of Tanh",
+            "Backpropagating through a dot product",
+            "Checking gradients manually"
+          ],
+          "tasks": [
+            {
+              "type": "gap_fill",
+              "instruction": "If `o = tanh(n)`, what is the local derivative `do/dn`?",
+              "template": "# Local derivative of tanh is 1 - output squared\nlocal_deriv = 1 - ___**2",
+              "solution": "o.data",
+              "hints": [
+                "It depends on the output of the tanh function itself."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "micrograd_ch10",
+          "title": "Automating Backward Pass",
+          "video_id": "VMj-3S1tku0",
+          "description": "We implement the `_backward` method for each operation. This method is a closure that captures the necessary variables to compute gradients automatically.",
+          "start": 4142,
+          "end": 4652,
+          "xp_reward": 100,
+          "key_learning_outcomes": [
+            "Using closures for backward functions",
+            "Implementing _backward for Add",
+            "Implementing _backward for Mul"
+          ],
+          "tasks": [
+            {
+              "type": "parsons",
+              "instruction": "Construct the `_backward` function for multiplication `out = self * other`.",
+              "solution": "def _backward():\n    self.grad += other.data * out.grad\n    other.grad += self.data * out.grad\nout._backward = _backward",
+              "lines": [
+                "out._backward = _backward",
+                "self.grad += other.data * out.grad",
+                "def _backward():",
+                "other.grad += self.data * out.grad"
+              ],
+              "hints": [
+                "Define the function first.",
+                "Update self.grad using other.data (switch variable trick).",
+                "Attach it to the output object."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "micrograd_ch11",
+          "title": "Topological Sort & .backward()",
+          "video_id": "VMj-3S1tku0",
+          "description": "To call `_backward` in the correct order, we implement a Topological Sort on the graph DAG. We essentially reverse the graph creation order.",
+          "start": 4652,
+          "end": 4948,
+          "xp_reward": 100,
+          "key_learning_outcomes": [
+            "Topological Sort logic",
+            "Building the full .backward() method",
+            "Reverse iteration"
+          ],
+          "tasks": [
+            {
+              "type": "quiz",
+              "instruction": "Why must we use Topological Sort before calling `_backward`?",
+              "options": [
+                "To ensure we compute gradients for a node only after all its parent gradients (upstream) are fully computed.",
+                "To make the graph look pretty.",
+                "Because Python dictionaries are unordered."
+              ],
+              "solution": "To ensure we compute gradients for a node only after all its parent gradients (upstream) are fully computed.",
+              "hints": [
+                "Dependencies must be resolved first.",
+                "Backprop flows from end to start."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "micrograd_ch12",
+          "title": "The Multivariate Bug",
+          "video_id": "VMj-3S1tku0",
+          "description": "We discover a bug when a variable is used multiple times (e.g., `a + a`). The gradients were overwriting each other instead of accumulating. We fix it using `+=`.",
+          "start": 4948,
+          "end": 5225,
+          "xp_reward": 100,
+          "key_learning_outcomes": [
+            "Gradient Accumulation Rule",
+            "The multivariate chain rule",
+            "Fixing the overwrite bug"
+          ],
+          "tasks": [
+            {
+              "type": "gap_fill",
+              "instruction": "Fix the bug in the gradient update. Gradients from different paths must ___.",
+              "template": "# Wrong: self.grad = gradient\n# Correct: self.grad ___ gradient",
+              "solution": "+=",
+              "hints": [
+                "We need to add to the existing value.",
+                "It's an accumulation."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "micrograd_ch13",
+          "title": "More Operations & Logic",
+          "video_id": "VMj-3S1tku0",
+          "description": "We implement `pow`, `exp`, `sub`, `div`, and `rmul` to make the library robust and capable of complex expressions.",
+          "start": 5225,
+          "end": 5784,
+          "xp_reward": 75,
+          "key_learning_outcomes": [
+            "__rmul__ for fallback multiplication",
+            "Implementing division as x * y^-1",
+            "Derivative of Power Rule"
+          ],
+          "tasks": [
+            {
+              "type": "code",
+              "instruction": "Implement the backward pass for the Power operation `x**k`.",
+              "template": "def _backward():\n    # d/dx (x^k) = k * x^(k-1)\n    self.grad += (___ * self.data ** (___ - 1)) * out.grad",
+              "solution": "other, other",
+              "hints": [
+                "Here, 'other' is the exponent k.",
+                "Follow the standard power rule."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "micrograd_ch14",
+          "title": "Composite Ops & PyTorch",
+          "video_id": "VMj-3S1tku0",
+          "description": "We recreate Tanh using our new atomic operations (exp, div) and verify gradients. We then compare our engine to PyTorch's API.",
+          "start": 5784,
+          "end": 6235,
+          "xp_reward": 75,
+          "key_learning_outcomes": [
+            "Composite functions vs Atomic functions",
+            "PyTorch Tensor API similarity",
+            "requires_grad=True in PyTorch"
+          ],
+          "tasks": [
+            {
+              "type": "quiz",
+              "instruction": "How does PyTorch represent scalar values compared to Micrograd?",
+              "options": [
+                "As Tensors (n-dimensional arrays).",
+                "As simple integers.",
+                "As dictionaries."
+              ],
+              "solution": "As Tensors (n-dimensional arrays).",
+              "hints": [
+                "PyTorch is designed for massive parallelism.",
+                "Even a single number is a 0-dimensional Tensor."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "micrograd_ch15",
+          "title": "Building the Neural Net Module",
+          "video_id": "VMj-3S1tku0",
+          "description": "We build the `Neuron`, `Layer`, and `MLP` classes, mirroring PyTorch's `nn.Module` structure.",
+          "start": 6235,
+          "end": 6664,
+          "xp_reward": 100,
+          "key_learning_outcomes": [
+            "Object-Oriented NN design",
+            "Initializing weights randomly",
+            "Forward pass of an MLP"
+          ],
+          "tasks": [
+            {
+              "type": "gap_fill",
+              "instruction": "Initialize the weights of a neuron with random values between -1 and 1.",
+              "template": "class Neuron:\n    def __init__(self, nin):\n        self.w = [Value(random.uniform(-1,1)) for _ in range(___)]\n        self.b = Value(random.uniform(-1,1))",
+              "solution": "nin",
+              "hints": [
+                "nin stands for Number of INputs.",
+                "We need one weight per input."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "micrograd_ch16",
+          "title": "Data & Loss Function",
+          "video_id": "VMj-3S1tku0",
+          "description": "We define a tiny dataset and implement the Mean Squared Error (MSE) loss function to measure performance.",
+          "start": 6664,
+          "end": 7076,
+          "xp_reward": 75,
+          "key_learning_outcomes": [
+            "Mean Squared Error formula",
+            "Ground Truth vs Prediction",
+            "The goal of minimizing loss"
+          ],
+          "tasks": [
+            {
+              "type": "parsons",
+              "instruction": "Calculate the total MSE loss for a list of predictions and targets.",
+              "solution": "losses = [(yi - ygt)**2 for ygt, yi in zip(ys, ypred)]\ndata_loss = sum(losses)\nloss = data_loss",
+              "lines": [
+                "loss = data_loss",
+                "losses = [(yi - ygt)**2 for ygt, yi in zip(ys, ypred)]",
+                "data_loss = sum(losses)"
+              ],
+              "hints": [
+                "First, compute individual squared errors.",
+                "Then, sum them up."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "micrograd_ch17",
+          "title": "Gradient Descent Loop",
+          "video_id": "VMj-3S1tku0",
+          "description": "We implement the `parameters()` method to gather all weights and write the training loop: Forward, Backward, Update.",
+          "start": 7076,
+          "end": 7560,
+          "xp_reward": 100,
+          "key_learning_outcomes": [
+            "Recursively collecting parameters",
+            "Gradient Descent Update Rule",
+            "Learning Rate concept"
+          ],
+          "tasks": [
+            {
+              "type": "gap_fill",
+              "instruction": "Perform the gradient descent update. We move ___ the direction of the gradient.",
+              "template": "for p in model.parameters():\n    p.data += -learning_rate * ___",
+              "solution": "p.grad",
+              "hints": [
+                "We use the gradient stored in the parameter.",
+                "The negative sign indicates we are minimizing loss."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "micrograd_ch18",
+          "title": "Convergence & The Zero-Grad Bug",
+          "video_id": "VMj-3S1tku0",
+          "description": "We encounter a critical bug: forgetting to zero out gradients allows them to accumulate endlessly. We fix it and watch the model converge.",
+          "start": 7560,
+          "end": 8043,
+          "xp_reward": 100,
+          "key_learning_outcomes": [
+            "zero_grad() necessity",
+            "Consequence of accumulating gradients across steps",
+            "Tuning learning rate"
+          ],
+          "tasks": [
+            {
+              "type": "code",
+              "instruction": "Implement the `zero_grad` function to reset gradients before the next backward pass.",
+              "template": "def zero_grad(model):\n    for p in model.parameters():\n        p.grad = ___",
+              "solution": "def zero_grad(model):\n    for p in model.parameters():\n        p.grad = 0.0",
+              "hints": [
+                "Reset it to a float zero.",
+                "This flushes the history."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "micrograd_ch19",
+          "title": "Summary & Internals",
+          "video_id": "VMj-3S1tku0",
+          "description": "We wrap up by reviewing the full micrograd code, discussing how this relates to large models like GPT, and briefly looking at PyTorch's internal C++ implementation of Tanh.",
+          "start": 8043,
+          "end": 8751,
+          "xp_reward": 50,
+          "key_learning_outcomes": [
+            "Micrograd as a pedagogical tool",
+            "Similarity to modern Deep Learning libraries",
+            "Complexity of production-grade code"
+          ],
+          "tasks": [
+            {
+              "type": "quiz",
+              "instruction": "According to the video, what is the main difference between Micrograd and production libraries like PyTorch?",
+              "options": [
+                "Micrograd is scalar-based for understanding; PyTorch uses Tensors for efficiency.",
+                "Micrograd uses a different mathematical theory.",
+                "Micrograd cannot do backpropagation."
+              ],
+              "solution": "Micrograd is scalar-based for understanding; PyTorch uses Tensors for efficiency.",
+              "hints": [
+                "The math is the same.",
+                "Parallelism (Tensors) is key for speed."
+              ]
+            }
+          ]
+        }
+      ]
     }
+ 
   ]
 }
