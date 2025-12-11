@@ -1,289 +1,12 @@
 {
   "version": 1,
-  "courses": [
-    {
-      "id": "course_intro_to_ai",
-      "title": "Introduction to Artificial Intelligence",
-      "thumbnail": "assets/ai-intro-thumbnail.jpg",
-      "description": "A fundamental overview of AI, distinguishing between Weak and Strong AI, and exploring the hierarchy of Machine Learning and Deep Learning.",
-      "sequence_order": 1,
-      "chapters": [
-        {
-          "id": "intro_ai_ch1",
-          "title": "Defining AI and Its Capabilities",
-          "video_id": "ad79nYk2keg",
-          "description": "We define Artificial Intelligence by looking at a robot's ability to adapt, reason, and solve problems. We then categorize AI into Weak (Narrow) and Strong forms, and clarify the relationship between AI, Machine Learning, and Deep Learning.",
-          "start": 0,
-          "end": 300,
-          "xp_reward": 100,
-          "key_learning_outcomes": [
-            "Core Capabilities: Generalized Learning, Reasoning, Problem Solving",
-            "Distinction between Weak AI (AlphaGo, Alexa) and Strong AI (Ultron)",
-            "The hierarchy: AI > Machine Learning > Deep Learning",
-            "Future concepts: The Singularity and Cyborgs"
-          ],
-          "tasks": [
-            {
-              "type": "parsons",
-              "instruction": "Reconstruct the logic flow of the robot's capabilities as demonstrated in the field experiment.",
-              "solution": "robot.adapt_to_lighting() # Generalized Learning\npath = robot.choose_path() # Reasoning\nrobot.use_plank_to_cross() # Problem Solving",
-              "lines": [
-                "robot.use_plank_to_cross() # Problem Solving",
-                "robot.adapt_to_lighting() # Generalized Learning",
-                "path = robot.choose_path() # Reasoning"
-              ],
-              "hints": [
-                "First, the robot had to handle environmental changes.",
-                "Second, it had to make a choice between roads.",
-                "Finally, it had to overcome a physical obstacle."
-              ]
-            },
-            {
-              "type": "quiz",
-              "instruction": "Why is Alexa considered 'Weak AI' (Narrow AI) despite its many features?",
-              "options": [
-                "It operates based on pre-trained keywords and lacks self-awareness.",
-                "It cannot connect to the internet.",
-                "It controls physical robots."
-              ],
-              "solution": "It operates based on pre-trained keywords and lacks self-awareness.",
-              "hints": [
-                "Try asking it something it wasn't trained for, like traffic status without prior setup.",
-                "Weak AI focuses on specific tasks."
-              ]
-            },
-            {
-              "type": "gap_fill",
-              "instruction": "Complete the definition of Deep Learning based on the video's description.",
-              "template": "# Machine Learning uses algorithms to learn from data\n# Deep Learning is a subset inspired by the:\nmodel_inspiration = \"___ brain\"",
-              "solution": "human",
-              "hints": [
-                "It mimics the biological organ in our heads.",
-                "This approach helps better perceive patterns."
-              ]
-            },
-            {
-              "type": "quiz",
-              "instruction": "What is the 'Point of Singularity' predicted by Ray Kurzweil?",
-              "options": [
-                "The year 2045, when robots become as smart as humans.",
-                "The moment AI becomes dangerous.",
-                "The point where we stop using smartphones."
-              ],
-              "solution": "The year 2045, when robots become as smart as humans.",
-              "hints": [
-                "It involves a specific year mentioned in the video.",
-                "It relates to the parity between human and machine intelligence."
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "course_neural_networks_intro",
-      "title": "Neural Networks: The Structure",
-      "thumbnail": "assets/neural-networks-intro-thumbnail.jpg",
-      "description": "A deep dive into the mathematical structure of neural networks, exploring how neurons, layers, weights, and biases collaborate to recognize handwritten digits.",
-      "sequence_order": 2,
-      "chapters": [
-        {
-          "id": "neural_nets_ch1",
-          "title": "The Architecture of Layers",
-          "video_id": "aircAruvnKk",
-          "description": "Introduction to the biological inspiration behind neural networks, defining neurons as containers for activation numbers and explaining the hierarchical layered structure used to solve complex problems like digit recognition.",
-          "start": 0,
-          "end": 518,
-          "xp_reward": 50,
-          "key_learning_outcomes": [
-            "Definition of a neuron's 'activation'",
-            "Input and Output layer dimensions for MNIST",
-            "The concept of Hidden Layers",
-            "Hierarchical feature abstraction (Edges -> Loops -> Digits)"
-          ],
-          "tasks": [
-            {
-              "type": "quiz",
-              "instruction": "In this specific neural network model, what does a single 'neuron' essentially hold?",
-              "options": [
-                "A number between 0 and 1 representing activation",
-                "A biological electrical impulse",
-                "A complex image file"
-              ],
-              "solution": "A number between 0 and 1 representing activation",
-              "hints": [
-                "Think of it as a container for a single value.",
-                "It represents how 'lit up' the cell is."
-              ]
-            },
-            {
-              "type": "gap_fill",
-              "instruction": "Calculate the input size. The input images are 28x28 pixels.",
-              "template": "grid_width = 28\ngrid_height = 28\n# Each pixel is one neuron in the first layer\ntotal_input_neurons = ___",
-              "solution": "784",
-              "hints": [
-                "Multiply the width by the height."
-              ]
-            },
-            {
-              "type": "parsons",
-              "instruction": "Arrange the logic flow of how the network *should* hierarchically analyze an image of a number.",
-              "solution": "Detect specific edges\nIdentify patterns (loops, lines)\nRecognize the full digit",
-              "lines": [
-                "Recognize the full digit",
-                "Detect specific edges",
-                "Identify patterns (loops, lines)"
-              ],
-              "hints": [
-                "It starts with the smallest components.",
-                "It ends with the final classification."
-              ]
-            },
-            {
-              "type": "gap_fill",
-              "instruction": "Complete the terminology for the layers between input and output.",
-              "template": "input_layer = network[0]\noutput_layer = network[-1]\n# The layers in the middle are called:\nmiddle_layers = \"___ layers\"",
-              "solution": "hidden",
-              "hints": [
-                "They are not directly seen as input or output.",
-                "The video refers to them as '___ layers' because their function is initially a mystery."
-              ]
-            }
-          ]
-        },
-        {
-          "id": "neural_nets_ch2",
-          "title": "Weights, Biases, and The Sigmoid",
-          "video_id": "aircAruvnKk",
-          "description": "Deconstructing the mechanism of a single neuron. This chapter covers how weights assign importance to input pixels, how biases act as activation thresholds, and how the sigmoid function normalizes the output.",
-          "start": 518,
-          "end": 806,
-          "xp_reward": 75,
-          "key_learning_outcomes": [
-            "The role of Weights in pattern matching",
-            "The Weighted Sum calculation",
-            "The role of Bias in thresholding",
-            "The Sigmoid 'squishification' function"
-          ],
-          "tasks": [
-            {
-              "type": "quiz",
-              "instruction": "If a neuron wants to detect a specific pixel pattern, how does it set its weights?",
-              "options": [
-                "Positive weights for matching pixels, negative for surrounding pixels",
-                "All weights set to zero",
-                "Random weights for all pixels"
-              ],
-              "solution": "Positive weights for matching pixels, negative for surrounding pixels",
-              "hints": [
-                "Think about the edge detection example.",
-                "Green pixels meant positive, red meant negative."
-              ]
-            },
-            {
-              "type": "code",
-              "instruction": "Implement the mathematical formula for a single neuron's processing *before* the activation function. Compute the weighted sum plus bias.",
-              "template": "def calculate_z(inputs, weights, bias):\n    # inputs: list of pixel values\n    # weights: list of connection strengths\n    # bias: single number threshold\n    weighted_sum = 0\n    for i in range(len(inputs)):\n        weighted_sum += ___\n    return weighted_sum + ___",
-              "solution": "def calculate_z(inputs, weights, bias):\n    # inputs: list of pixel values\n    # weights: list of connection strengths\n    # bias: single number threshold\n    weighted_sum = 0\n    for i in range(len(inputs)):\n        weighted_sum += inputs[i] * weights[i]\n    return weighted_sum + bias",
-              "hints": [
-                "Multiply the input by its corresponding weight.",
-                "Don't forget to add the bias at the end."
-              ]
-            },
-            {
-              "type": "gap_fill",
-              "instruction": "Define the purpose of the Bias.",
-              "template": "# The bias indicates how high the weighted sum needs to be\n# before the neuron becomes meaningfully ___",
-              "solution": "active",
-              "hints": [
-                "It's about whether the neuron lights up or not."
-              ]
-            },
-            {
-              "type": "gap_fill",
-              "instruction": "The output of the neuron is compressed into a 0-1 range using this function.",
-              "template": "import math\n\ndef activation_function(x):\n    # This is the ___ function\n    return 1 / (1 + math.exp(-x))",
-              "solution": "sigmoid",
-              "hints": [
-                "Also known as the logistic curve.",
-                "Starts with 's'."
-              ]
-            }
-          ]
-        },
-        {
-          "id": "neural_nets_ch3",
-          "title": "Matrix Notation & Modern Activations",
-          "video_id": "aircAruvnKk",
-          "description": "Transitioning to Linear Algebra notation for efficiency. This chapter explains how to represent layers as vectors and weights as matrices, and concludes with a discussion on ReLU vs Sigmoid.",
-          "start": 806,
-          "end": 1119,
-          "xp_reward": 100,
-          "key_learning_outcomes": [
-            "Vector representation of activations",
-            "Matrix-Vector multiplication for layers",
-            "Compact mathematical notation sigma(Wa + b)",
-            "ReLU (Rectified Linear Unit) definition"
-          ],
-          "tasks": [
-            {
-              "type": "parsons",
-              "instruction": "Construct the clean linear algebra expression for the activation of the next layer.",
-              "solution": "weighted_sum = np.dot(weights_matrix, activation_vector)\nz = weighted_sum + bias_vector\nnext_activations = sigmoid(z)",
-              "lines": [
-                "next_activations = sigmoid(z)",
-                "weighted_sum = np.dot(weights_matrix, activation_vector)",
-                "z = weighted_sum + bias_vector"
-              ],
-              "hints": [
-                "Matrix multiplication happens first.",
-                "Add the bias vector second.",
-                "Apply the function last."
-              ]
-            },
-            {
-              "type": "gap_fill",
-              "instruction": "In the matrix notation, what does 'W' represent?",
-              "template": "# a(L) = sigmoid( W * a(L-1) + b )\n# W is the matrix containing all ___ connecting the two layers",
-              "solution": "weights",
-              "hints": [
-                "These are the connection strengths."
-              ]
-            },
-            {
-              "type": "quiz",
-              "instruction": "Why do modern networks often use ReLU instead of Sigmoid?",
-              "options": [
-                "ReLU is easier to train for deep networks",
-                "ReLU outputs numbers between 0 and 1 only",
-                "ReLU mimics the biology perfectly"
-              ],
-              "solution": "ReLU is easier to train for deep networks",
-              "hints": [
-                "Lisha Li mentions this in the interview.",
-                "Sigmoid was 'old school'."
-              ]
-            },
-            {
-              "type": "code",
-              "instruction": "Implement the ReLU function described in the interview.",
-              "template": "def relu(x):\n    # Return x if x is positive, else 0\n    return ___",
-              "solution": "def relu(x):\n    # Return x if x is positive, else 0\n    return max(0, x)",
-              "hints": [
-                "Use the max function.",
-                "Compare x against 0."
-              ]
-            }
-          ]
-        }
-      ]
-    }, 
+  "courses": [ 
     {
       "id": "course_micrograd",
       "title": "Building Micrograd: Backpropagation from Scratch",
       "thumbnail": "assets/micrograd-thumbnail.jpg",
       "description": "Master the fundamentals of neural networks by building 'micrograd', a tiny Autograd engine, from scratch in Python.",
-      "sequence_order": 3,
+      "sequence_order": 1,
       "chapters": [
         {
           "id": "micrograd_ch1",
@@ -699,7 +422,7 @@
       "title": "Building Makemore: The Bigram Language Model",
       "thumbnail": "assets/makemore-thumbnail.jpg",
       "description": "Build a character-level language model from scratch. Start with a probabilistic bigram model using frequency counts, then evolve it into a neural network using PyTorch, covering tensors, broadcasting, softmax, and gradient descent.",
-      "sequence_order": 4,
+      "sequence_order": 2,
       "chapters": [
         {
           "id": "makemore_ch1",
@@ -1042,7 +765,7 @@
       "title": "Building Makemore: The Multi-Layer Perceptron",
       "thumbnail": "assets/makemore-mlp-thumbnail.jpg",
       "description": "Upgrade your language model from a simple bigram to a Multi-Layer Perceptron (MLP) following the Bengio et al. 2003 paper. Master embeddings, tensor internals, and proper training methodology.",
-      "sequence_order": 5,
+      "sequence_order": 3,
       "chapters": [
         {
           "id": "makemore_mlp_ch1",
@@ -1249,7 +972,7 @@
       "title": "Makemore: Initialization & Batch Normalization",
       "thumbnail": "assets/makemore-batchnorm-thumbnail.jpg",
       "description": "Deep dive into the 'black magic' of training deep neural networks. Learn how to diagnose training issues, properly initialize weights (Kaiming Init), and implement Batch Normalization from scratch to stabilize training.",
-      "sequence_order": 6,
+      "sequence_order": 4,
       "chapters": [
         {
           "id": "makemore_bn_ch1",
@@ -1521,7 +1244,7 @@
       "title": "Makemore: Becoming a Backprop Ninja",
       "thumbnail": "assets/makemore-backprop-thumbnail.jpg",
       "description": "De-mystify deep learning by manually implementing backpropagation from scratch. Move beyond 'loss.backward()' to understand tensor-level gradients, matrix calculus, and analytical simplifications for Cross Entropy and Batch Normalization.",
-      "sequence_order": 7,
+      "sequence_order": 5,
       "chapters": [
         {
           "id": "makemore_bp_ch1",
@@ -1814,7 +1537,7 @@
       "title": "Building Makemore: WaveNet",
       "thumbnail": "assets/makemore-wavenet-thumbnail.jpg",
       "description": "Scale up your character-level language model by implementing a WaveNet-like hierarchical architecture. Learn to modularize code like PyTorch, handle high-dimensional tensor operations, and debug complex batch normalization issues.",
-      "sequence_order": 8,
+      "sequence_order": 6,
       "chapters": [
         {
           "id": "makemore_wn_ch1",
@@ -1947,7 +1670,7 @@
       "title": "LLM Tokenization: From Scratch",
       "thumbnail": "assets/tokenization-thumbnail.jpg",
       "description": "Let's build the GPT Tokenizer. Master the fundamental 'atom' of Large Language Models: the Token. Build a Byte Pair Encoding (BPE) tokenizer from scratch, understand Unicode and UTF-8, and debug common tokenization issues like the 'SolidGoldMagikarp' bug.",
-      "sequence_order": 9,
+      "sequence_order": 7,
       "chapters": [
         {
           "id": "tokenization_ch1",
@@ -2191,7 +1914,7 @@
       "title": "Build GPT From Scratch with PyTorch",
       "thumbnail": "assets/build-gpt-thumbnail.jpg",
       "description": "A comprehensive code-along course building a Generative Pre-trained Transformer (GPT) from the ground up, following the 'Attention Is All You Need' architecture.",
-      "sequence_order": 10,
+      "sequence_order": 8,
       "chapters": [
         {
           "id": "gpt_ch1_data",
@@ -2431,7 +2154,7 @@
       "title": "Reproducing GPT-2 (124M) from Scratch",
       "thumbnail": "assets/gpt2-repro-thumbnail.jpg",
       "description": "A comprehensive deep dive into recreating OpenAI's GPT-2 (124M) model. This course covers everything from model architecture and weight loading to advanced optimization techniques like Flash Attention, Distributed Data Parallel (DDP), and mixed precision training.",
-      "sequence_order": 11,
+      "sequence_order": 9,
       "chapters": [
         {
           "id": "gpt2_ch1_intro",
