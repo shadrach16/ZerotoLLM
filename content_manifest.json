@@ -1530,7 +1530,7 @@
           "id": "mlp_ch7_learning_rate",
           "title": "Finding the Optimal Learning Rate",
           "video_id": "TCH_1BHY58I",
-          "description": "Learn the technique of sweeping learning rates exponentially to find the optimal value (valley of the loss plot).",
+          "description": "Learn the technique of sweeping learning rates exponentially to find the optimal value ('valley' of the loss plot).",
           "start": 2740,
           "end": 3200,
           "xp_reward": 100,
